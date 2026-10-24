@@ -47,6 +47,11 @@
   <link rel="modulepreload" href="./js/audio-sources.js" />
   <link rel="modulepreload" href="./js/audio-acoustics.js" />
   <link rel="modulepreload" href="./js/audio-system.js" />
+  <link rel="modulepreload" href="./js/education-config.js" />
+  <link rel="modulepreload" href="./js/education-session.js" />
+  <link rel="modulepreload" href="./js/education-terminals.js" />
+  <link rel="modulepreload" href="./js/education-ui.js" />
+  <link rel="modulepreload" href="./js/education-navigation.js" />
   <link rel="modulepreload" href="./js/main.js" />
   <script type="module" src="./js/main.js"></script>
   <!-- Inter (UI) & Overpass (street-name signs: modelled on Highway Gothic, the US road sign typeface) -->
@@ -54,6 +59,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&amp;family=Overpass:wght@600;700&amp;display=swap" />
   <link rel="stylesheet" href="./css/style.css?v=20261022-repo-link" />
+  <link rel="stylesheet" href="./css/education.css" />
 </head>
 <body>
   <!-- Icon sprite (24 × 24 stroke icons, drawn in currentColor) -->
@@ -131,6 +137,9 @@
         </button>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
+      <button id="btn-return-start" class="tool-btn" type="button" title="Return to Start · keep question progress" aria-label="Return to Start">
+        <svg class="icon" aria-hidden="true"><use href="#i-locate"/></svg><span class="tool-label">Return to Start</span>
+      </button>
       <button id="btn-teleport" class="tool-btn" type="button" popovertarget="teleport-popover" title="Teleport the active player">
         <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span class="tool-label">Teleport</span><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg>
       </button>
@@ -313,5 +322,28 @@
     </div>
   </section>
 
+  <aside id="education-hud" aria-label="Synthetic question demo" hidden>
+    <strong>Question demo · synthetic data</strong>
+    <p id="education-progress" role="status"></p>
+    <p id="education-prompt" hidden></p>
+    <p id="education-completion" role="status" hidden>Demo complete! All five questions passed. Continue exploring the city.</p>
+    <p id="education-navigation-status" role="status" hidden></p>
+  </aside>
+  <dialog id="education-dialog" aria-labelledby="education-title" aria-describedby="education-demo-note education-question">
+    <p id="education-demo-note">Synthetic interaction demo · not actual coursework</p>
+    <h2 id="education-title"></h2>
+    <p id="education-question"></p>
+    <form id="education-answer">
+      <fieldset>
+        <legend>Choose one answer</legend>
+        <div id="education-options"></div>
+      </fieldset>
+      <p id="education-feedback" role="status" aria-live="polite"></p>
+      <div class="education-actions">
+        <button type="submit">Submit Answer</button>
+        <button id="education-close" type="button">Close</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>

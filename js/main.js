@@ -19,6 +19,11 @@ import { LightingSystem } from './lighting.js';
 import { NYCMapSystem } from './nyc-map.js';
 import { setupSceneCulling, updateSceneCulling } from './scene-culling.js';
 import { CityAudioSystem } from './audio-system.js';
+import { INTERACTION, initializeEducationStart, nearestTerminal } from './education-config.js';
+import { createDemoSession } from './education-session.js';
+import { createEducationTerminals } from './education-terminals.js';
+import { createEducationUI } from './education-ui.js';
+import { createEducationNavigation } from './education-navigation.js';
 
 // js/main.js
 // Main entry point for New York City (Midtown Manhattan) in Three.js WebGPURenderer & TSL (three.js dev, see index.html)
@@ -100,19 +105,9 @@ async function initApp() {
 
   // 4. Initialize Third-Person Controllers (Person, Car, Cyclist, Helicopter) & Multi-Camera System
   const controllerManager = new ThirdPersonControllerManager(scene, allColliders);
-  // Reuse teleport placement so saved players return at rest, close to their last positions.
-  try {
-    const saved = JSON.parse(localStorage.getItem('nyc-player-state'));
-    if (saved?.version === 1) {
-      for (const mode of Object.keys(controllerManager.entities)) {
-        const p = saved.entities?.[mode];
-        if (!p || ![p.x, p.y, p.z, p.heading].every(Number.isFinite)) continue;
-        controllerManager.setMode(mode);
-        controllerManager.teleportActiveTo(p.x, p.z, p.heading, p.y);
-      }
-      controllerManager.setMode(Object.hasOwn(controllerManager.entities, saved.activeMode) ? saved.activeMode : 'car');
-    }
-  } catch { /* Missing or unavailable storage does not prevent playing. */ }
+  // Educational startup deliberately ignores saved travel state; other modes keep their own original starts.
+  initializeEducationStart(controllerManager);
+  const educationTerminals = createEducationTerminals(scene);
 
   function savePlayerState() {
     try {
@@ -267,7 +262,7 @@ async function initApp() {
   }
 
   function selectMode(mode) {
-    controllerManager.setMode(mode);
+    if (!educationNavigation.switchMode(mode).ok) return;
     touchControls.setMode(controllerManager.activeMode);
     gamepadControls.reset();
     modeButtons.forEach((btn) => {
@@ -468,6 +463,26 @@ async function initApp() {
   const openMapBtn = document.getElementById('btn-open-map');
   if (openMapBtn) openMapBtn.addEventListener('click', () => mapSystem.toggleFullMap(true));
 
+  const returnStartButton = document.getElementById('btn-return-start');
+  const educationNavigation = createEducationNavigation({
+    manager: controllerManager,
+    teleport: teleportTo,
+    getActors: () => [...trafficSystem.cars, ...trafficSystem.buses, ...highwayTraffic.cars, ...trafficSystem.peds],
+    isBlocked: () => document.getElementById('education-dialog').open,
+    onStatus: (message, ok) => {
+      const status = document.getElementById('education-navigation-status');
+      status.textContent = message;
+      status.dataset.result = ok ? 'ok' : 'error';
+      status.hidden = false;
+    }
+  });
+  returnStartButton.addEventListener('click', () => {
+    if (educationNavigation.returnToStart().ok) selectMode(controllerManager.activeMode);
+  });
+  for (const type of ['keydown', 'keyup']) returnStartButton.addEventListener(type, event => {
+    if (event.code === 'Space' || event.code === 'Enter') event.stopPropagation();
+  });
+
   if (hudToggleBtn) {
     hudToggleBtn.addEventListener('click', () => {
       document.body.classList.toggle('hud-minimized');
@@ -538,7 +553,36 @@ async function initApp() {
     }
   });
 
-  // Initialize the UI and chase camera around the restored player, or the default taxi on a first visit.
+  const demoSession = createDemoSession();
+  let resumeTouch = true, resumeGamepad = true;
+  const educationUI = createEducationUI({
+    session: demoSession,
+    available: () => loadingOverlay.classList.contains('hidden') && !document.hidden && !mapSystem.isFullMapOpen,
+    getNearby: () => {
+      const entity = controllerManager.getActiveEntity();
+      return nearestTerminal(entity, controllerManager.activeMode,
+        controllerManager.getGroundHeight(entity.position.x, entity.position.z, controllerManager.activeMode),
+        controllerManager.nearColliders(entity.position.x, entity.position.z, INTERACTION.radius[controllerManager.activeMode] ?? 0));
+    },
+    onPause: () => {
+      returnStartButton.disabled = true;
+      resumeTouch = touchControls.enabled;
+      resumeGamepad = gamepadControls.enabled;
+      controllerManager.resetInput();
+      touchControls.setEnabled(false);
+      gamepadControls.setEnabled(false);
+      cameraSystem._clearPointers(); // Release an in-progress orbit without changing the camera preset or angles.
+    },
+    onResume: () => {
+      returnStartButton.disabled = false;
+      controllerManager.resetInput();
+      touchControls.setEnabled(resumeTouch);
+      gamepadControls.setEnabled(resumeGamepad);
+    },
+    onPassed: id => educationTerminals.markPassed(id)
+  });
+
+  // Initialize the UI and chase camera around the fixed educational taxi start.
   selectMode(controllerManager.activeMode);
   selectCamera('chase', true);
   selectTime('golden');
@@ -643,22 +687,24 @@ async function initApp() {
     const rawDt = (now - lastTime) * 0.001;
     lastTime = now;
     const dt = Math.min(Math.max(rawDt, 0.001), 0.05);
-    elapsed += dt;
-
-    // Update 3rd-person controllers, camera, signals, traffic & vehicle collisions, building LODs, and dynamic shadow focus
-    gamepadControls.update(dt);
-    controllerManager.update(dt, elapsed);
-    cameraSystem.update(dt, elapsed);
-    streetDetails.signalClock.value = elapsed;
-    trafficSystem.update(
-      dt,
-      elapsed,
-      cameraSystem.currentPos,
-      controllerManager.getActiveEntity(),
-      controllerManager.activeMode,
-      cameraSystem.camera
-    );
-    highwayTraffic.update(dt, cameraSystem.camera, controllerManager.getActiveEntity(), controllerManager.activeMode);
+    // Freeze simulation together while answering: zero input alone cannot prevent coasting or traffic impulses.
+    // lastTime still advances every rendered frame, so closing the dialog never catches up paused time.
+    if (!educationUI.isOpen) {
+      elapsed += dt;
+      gamepadControls.update(dt);
+      controllerManager.update(dt, elapsed);
+      cameraSystem.update(dt, elapsed);
+      streetDetails.signalClock.value = elapsed;
+      trafficSystem.update(
+        dt,
+        elapsed,
+        cameraSystem.currentPos,
+        controllerManager.getActiveEntity(),
+        controllerManager.activeMode,
+        cameraSystem.camera
+      );
+      highwayTraffic.update(dt, cameraSystem.camera, controllerManager.getActiveEntity(), controllerManager.activeMode);
+    }
     if (!document.hidden && now >= nextPlayerSave) {
       savePlayerState();
       nextPlayerSave = now + 5000;
@@ -669,7 +715,8 @@ async function initApp() {
     if (streetDetails.update) streetDetails.update(cameraSystem.camera);
     lightingSystem.update(cameraSystem.currentPos);
     mapSystem.update();
-    audioSystem.update(dt, elapsed, cameraSystem.camera, lightingSystem.activePresetId === 'midnight');
+    if (!educationUI.isOpen) audioSystem.update(dt, elapsed, cameraSystem.camera, lightingSystem.activePresetId === 'midnight');
+    educationUI.update();
     if (warmedUp) updateSceneCulling(cameraSystem.camera.position); // the warm-up frame draws every chunk
 
     // Render frame via TSL RenderPipeline (SSR + Bloom)
