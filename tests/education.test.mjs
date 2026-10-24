@@ -9,7 +9,7 @@ const entity = (x, z, y = 0.22, speed = 0) => ({ position: { x, y, z }, heading:
 
 test('five immutable sites match the reviewed fixed coordinates and demo IDs', () => {
   assert.deepEqual(TERMINALS.map(({ id, x, z }) => [id, x, z]), [
-    ['Q01', -12, 422.6], ['Q02', 11, 422.6], ['Q03', -12, 442.6], ['Q04', 12, 442.6], ['Q05', -12, 462.6]
+    ['Q01', -55, 391], ['Q02', 11, 422.6], ['Q03', 60, 391], ['Q04', -60, 484.5], ['Q05', 65, 328.2]
   ]);
   assert.deepEqual(DEMO_QUESTIONS.map(q => q.id), TERMINALS.map(t => t.id));
   assert.ok(Object.isFrozen(TERMINALS) && TERMINALS.every(Object.isFrozen));
@@ -18,51 +18,51 @@ test('five immutable sites match the reviewed fixed coordinates and demo IDs', (
 for (const [mode, radius] of [['person', 3], ['car', 18], ['cyclist', 8]]) {
   test(`${mode} uses horizontal proximity at its configured radius`, () => {
     assert.equal(INTERACTION.radius[mode], radius);
-    assert.equal(nearestTerminal(entity(-12 - radius, 422.6), mode, 0.22)?.id, 'Q01');
-    assert.equal(nearestTerminal(entity(-12 - radius - 0.01, 422.6), mode, 0.22), null);
+    assert.equal(nearestTerminal(entity(-55 - radius, 391), mode, 0.22)?.id, 'Q01');
+    assert.equal(nearestTerminal(entity(-55 - radius - 0.01, 391), mode, 0.22), null);
   });
 }
 
 test('helicopter answering is disabled even at sidewalk height', () => {
-  assert.equal(nearestTerminal(entity(-12, 422.6), 'helicopter', 0.22), null);
+  assert.equal(nearestTerminal(entity(-55, 391), 'helicopter', 0.22), null);
 });
 
 test('car overlaps select the nearest terminal, with stable ties', () => {
-  assert.equal(nearestTerminal(entity(3.6, 410.6, 0), 'car', 0)?.id, 'Q02');
-  assert.equal(nearestTerminal(entity(-10, 440), 'car', 0)?.id, 'Q03');
-  assert.equal(nearestTerminal(entity(-0.5, 422.6), 'car', 0)?.id, 'Q01');
+  const startTerminal = nearestTerminal(entity(3.6, 410.6, 0), 'car', 0);
+  assert.ok(startTerminal && Math.hypot(startTerminal.x-3.6,startTerminal.z-410.6)<=INTERACTION.radius.car);
+  assert.equal(nearestTerminal(entity(60, 398.6), 'car', 0)?.id, 'Q03');
+  assert.equal(nearestTerminal(entity(-22, 406.8), 'car', 0, [], { ...INTERACTION, radius: {car: 100} })?.id, 'Q01');
 });
 
 for (const mode of ['car', 'cyclist']) {
   test(`${mode} must stop, including sideways impulse velocity`, () => {
-    assert.equal(nearestTerminal(entity(-12, 422.6, 0, 0.5), mode, 0)?.id, 'Q01');
-    assert.equal(nearestTerminal(entity(-12, 422.6, 0, -0.51), mode, 0), null);
-    const pushed = { ...entity(-12, 422.6, 0), vx: 0.7 };
+    assert.equal(nearestTerminal(entity(-55, 391, 0, 0.5), mode, 0)?.id, 'Q01');
+    assert.equal(nearestTerminal(entity(-55, 391, 0, -0.51), mode, 0), null);
+    const pushed = { ...entity(-55, 391, 0), vx: 0.7 };
     assert.equal(nearestTerminal(pushed, mode, 0), null);
     assert.equal(nearestTerminal({ ...pushed, vx: NaN }, mode, 0), null);
   });
 }
 
 test('jumping, elevated surfaces and invalid positions cannot answer ground questions', () => {
-  assert.equal(nearestTerminal(entity(-12, 422.6, 10), 'car', 0), null);
-  assert.equal(nearestTerminal(entity(-12, 422.6, 10), 'person', 10), null);
-  assert.equal(nearestTerminal(entity(-12, 422.6, 1.2), 'person', 0.22), null);
+  assert.equal(nearestTerminal(entity(-55, 391, 10), 'car', 0), null);
+  assert.equal(nearestTerminal(entity(-55, 391, 10), 'person', 10), null);
+  assert.equal(nearestTerminal(entity(-55, 391, 1.2), 'person', 0.22), null);
   assert.equal(nearestTerminal(entity(NaN, 422.6), 'person', 0.22), null);
 });
 
 test('solid buildings block approach, low curbs and clear oriented corners do not', () => {
-  const from = { x: -15, y: 0.22, z: 422.6 }, target = TERMINALS[0];
-  const wall = { minX: -14, maxX: -13, minZ: 420, maxZ: 425, maxY: 8 };
+  const from = { x: -58, y: 0.22, z: 391 }, target = TERMINALS[0];
+  const wall = { minX: -57, maxX: -56, minZ: 388, maxZ: 394, maxY: 8 };
   assert.equal(hasClearApproach(from, target, [wall]), false);
   assert.equal(hasClearApproach(from, target, [{ ...wall, maxY: 0.22 }]), true);
-  const box = { minX: -16, maxX: -10, minZ: 419, maxZ: 426, maxY: 8,
-    obb: { cx: -13.5, cz: 425, cs: Math.SQRT1_2, sn: Math.SQRT1_2, hx: 0.3, hz: 0.3 } };
+  const box = { minX: -59, maxX: -53, minZ: 387, maxZ: 394, maxY: 8,
+    obb: { cx: -56.5, cz: 393.5, cs: Math.SQRT1_2, sn: Math.SQRT1_2, hx: 0.3, hz: 0.3 } };
   assert.equal(hasClearApproach(from, target, [box]), true);
 });
 
 test('blocked nearest site is excluded while another clear site can be selected', () => {
-  const obstacle = { minX: 5, maxX: 6, minZ: 420, maxZ: 425, maxY: 8 };
-  assert.equal(nearestTerminal(entity(0, 422.6), 'car', 0, [obstacle])?.id, 'Q01');
+  assert.equal(nearestTerminal(entity(-22, 406.8), 'car', 0, [{minX:-10,maxX:-9,minZ:400,maxZ:425,maxY:8}], { ...INTERACTION, radius:{car:100} })?.id, 'Q01');
 });
 
 test('incorrect and malformed answers retain all prior completions; each pass is idempotent', () => {

@@ -1,7 +1,7 @@
 # Engineering City Lab — phased plan
 
-Status: **Phase 0 reviewed and merged; Phase 1 synthetic question MVP implemented
-on 2026-10-24 and awaiting instructor review. Stop at a draft PR.**
+Status: **Phase 1.1 usability improvements implemented on the existing draft PR #2
+branch on 2026-10-24; awaiting instructor review. Do not merge or begin Phase 2.**
 
 Prepared on 2026-10-23 (Asia/Taipei). This project adds Digital Electronics
 assignments to the imported Slop New York city. It does not rebuild the city or
@@ -87,8 +87,43 @@ No S01–S12 loading, v1/v2 port, teacher GUI, videos, Forms, timers or new rend
 **Open a draft PR and stop for review. Do not merge or begin Phase 2.**
 
 Implementation and review instructions: [docs/phase-1-results.md](docs/phase-1-results.md).
-The rendered survey moved Q02 from x = 12 to x = 11 to clear facade occlusion;
-all other proposed coordinates remain fixed. No city geometry was changed.
+The original Phase 1 survey moved Q02 from x = 12 to x = 11 to clear facade
+occlusion. Phase 1.1 retains Q02 and redistributes the other four sites as recorded
+below. No city geometry was changed.
+
+## Phase 1.1 — focused navigation usability
+
+The instructor authorizes three changes on `feature/phase-1-education-mvp` for
+draft PR #2, starting at `f9e9d86`. This supersedes the earlier same-block layout
+and independent ground-mode locations; all other Phase 1 constraints remain.
+
+1. Distribute exactly five fixed terminals across Fifth Avenue and adjacent
+   36th–38th Street sidewalks, aiming for walking routes under 250 m from start.
+   Keep one convenient to the starting taxi. Keep radii, stationary requirements,
+   obstruction checks, questions and marker construction unchanged. Verify actual
+   normal movement and rendered readability, not only test teleports.
+2. Relocate only on explicit car/person/cyclist switches, near the previous active
+   entity, using existing collision-safe placement and motion/camera resets. Cap
+   arrival distance at 20 m and check traffic occupancy. If no suitable arrival
+   exists, stay in the current mode/location and explain the failure. Helicopter
+   transitions preserve each selected entity's independent in-memory location.
+3. Add compact Return to Start navigation. Keep the current ground mode, or choose
+   car from helicopter; safely place it near the configured start, update the
+   waypoint and preserve all passes/colors. Block this action in question dialogs.
+4. Run the existing 119 tests, add navigation/placement regressions and update the
+   browser check to reach each terminal by normal movement. Exercise far-away and
+   Central Park switches, all Return modes, failures, dialogs and existing travel.
+   Update `docs/phase-1-results.md` with coordinates, evidence and Windows checks.
+
+Do not change the original city/physics/rendering, real assignment integration,
+teacher tools or reference repository. Update PR #2 and stop for review.
+
+Implementation complete: the 119-test baseline and all 137 final tests passed.
+The full-city Chromium check walked to all five sites using the original movement
+code, measuring 11.46–144.02 m from the returned walking position. Nearby ground
+switching, helicopter independence and Return from every mode passed. See the
+[Phase 1.1 verification record](docs/phase-1-results.md#verification) for coordinates,
+measurements, browser limits and the remaining physical Windows review.
 
 ## Phase 2 — assignment contract and session adapter
 

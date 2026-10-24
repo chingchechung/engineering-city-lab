@@ -1,11 +1,11 @@
 // Fixed city extension settings. This module does not read storage or alter city geometry.
 export const EDUCATION_START = Object.freeze({ x: 3.6, y: 0, z: 410.6, heading: 0 });
 export const TERMINALS = Object.freeze([
-  { id: 'Q01', x: -12, y: 0.22, z: 422.6 },
-  { id: 'Q02', x: 11, y: 0.22, z: 422.6 }, // 1 m toward the street: clears the facade in the rendered survey.
-  { id: 'Q03', x: -12, y: 0.22, z: 442.6 },
-  { id: 'Q04', x: 12, y: 0.22, z: 442.6 },
-  { id: 'Q05', x: -12, y: 0.22, z: 462.6 }
+  { id: 'Q01', x: -55, y: 0.22, z: 391 }, // W 37th St, north sidewalk.
+  { id: 'Q02', x: 11, y: 0.22, z: 422.6 }, // Fifth Avenue, convenient to the starting taxi.
+  { id: 'Q03', x: 60, y: 0.22, z: 391 }, // E 37th St, north sidewalk.
+  { id: 'Q04', x: -60, y: 0.22, z: 484.5 }, // W 36th St, south sidewalk.
+  { id: 'Q05', x: 65, y: 0.22, z: 328.2 } // E 38th St, south sidewalk.
 ].map(Object.freeze));
 export const INTERACTION = Object.freeze({
   radius: Object.freeze({ person: 3, car: 18, cyclist: 8 }),

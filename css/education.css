@@ -18,6 +18,8 @@
 body.hud-minimized #education-hud { display: none; }
 #education-prompt { margin-top: 6px; font-weight: 650; }
 #education-completion { margin-top: 6px; color: var(--ok); }
+#education-navigation-status { margin-top: 6px; color: var(--text-2); }
+#education-navigation-status[data-result="error"] { color: var(--bad); }
 #education-dialog {
   margin: auto;
   width: min(480px, calc(100vw - 32px));

@@ -23,6 +23,7 @@ import { INTERACTION, initializeEducationStart, nearestTerminal } from './educat
 import { createDemoSession } from './education-session.js';
 import { createEducationTerminals } from './education-terminals.js';
 import { createEducationUI } from './education-ui.js';
+import { createEducationNavigation } from './education-navigation.js';
 
 // js/main.js
 // Main entry point for New York City (Midtown Manhattan) in Three.js WebGPURenderer & TSL (three.js dev, see index.html)
@@ -261,7 +262,7 @@ async function initApp() {
   }
 
   function selectMode(mode) {
-    controllerManager.setMode(mode);
+    if (!educationNavigation.switchMode(mode).ok) return;
     touchControls.setMode(controllerManager.activeMode);
     gamepadControls.reset();
     modeButtons.forEach((btn) => {
@@ -462,6 +463,26 @@ async function initApp() {
   const openMapBtn = document.getElementById('btn-open-map');
   if (openMapBtn) openMapBtn.addEventListener('click', () => mapSystem.toggleFullMap(true));
 
+  const returnStartButton = document.getElementById('btn-return-start');
+  const educationNavigation = createEducationNavigation({
+    manager: controllerManager,
+    teleport: teleportTo,
+    getActors: () => [...trafficSystem.cars, ...trafficSystem.buses, ...highwayTraffic.cars, ...trafficSystem.peds],
+    isBlocked: () => document.getElementById('education-dialog').open,
+    onStatus: (message, ok) => {
+      const status = document.getElementById('education-navigation-status');
+      status.textContent = message;
+      status.dataset.result = ok ? 'ok' : 'error';
+      status.hidden = false;
+    }
+  });
+  returnStartButton.addEventListener('click', () => {
+    if (educationNavigation.returnToStart().ok) selectMode(controllerManager.activeMode);
+  });
+  for (const type of ['keydown', 'keyup']) returnStartButton.addEventListener(type, event => {
+    if (event.code === 'Space' || event.code === 'Enter') event.stopPropagation();
+  });
+
   if (hudToggleBtn) {
     hudToggleBtn.addEventListener('click', () => {
       document.body.classList.toggle('hud-minimized');
@@ -544,6 +565,7 @@ async function initApp() {
         controllerManager.nearColliders(entity.position.x, entity.position.z, INTERACTION.radius[controllerManager.activeMode] ?? 0));
     },
     onPause: () => {
+      returnStartButton.disabled = true;
       resumeTouch = touchControls.enabled;
       resumeGamepad = gamepadControls.enabled;
       controllerManager.resetInput();
@@ -552,6 +574,7 @@ async function initApp() {
       cameraSystem._clearPointers(); // Release an in-progress orbit without changing the camera preset or angles.
     },
     onResume: () => {
+      returnStartButton.disabled = false;
       controllerManager.resetInput();
       touchControls.setEnabled(resumeTouch);
       gamepadControls.setEnabled(resumeGamepad);

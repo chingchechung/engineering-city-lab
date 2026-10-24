@@ -6,12 +6,19 @@ take precedence over historical plans and rules from other projects.
 
 ## Current authorization
 
+- The instructor authorizes Phase 1.1 on the existing PR #2 branch: distribute
+  five terminals across nearby 36th–38th Street segments, relocate only on explicit
+  ground-to-ground mode changes using bounded safe placement, and add Return to
+  Start without resetting progress. This supersedes Phase 1's independent ground
+  locations and same-block terminal layout. Keep helicopter transitions independent.
+- Update draft PR #2; do not merge, modify main or begin Phase 2. The original
+  controller/physics, city geometry, traffic, rendering and dependencies stay unchanged.
 - Phase 0 PR #1 was reviewed and merged as `974fddf` on 2026-10-24. The instructor
   authorizes Phase 1's minimal synthetic question MVP, extending the previous
   placeholder-only scope: fixed car startup, five fixed terminals, ground-mode
   X interaction, demo answers/feedback and in-memory progress without resets.
-- Preserve independent positions for other travel modes. Helicopter answering
-  is disabled. Pause simulation safely during dialogs and keep rendering.
+- Preserve independent helicopter transitions; helicopter answering stays disabled.
+  Pause simulation safely during dialogs and keep rendering.
 - No real S01–S12 loader, JSON integration, authoring changes, videos or Forms
   in Phase 1. Do not modify `ece_hw_webproject`. Open a draft PR and stop for
   instructor review; do not merge or begin Phase 2.

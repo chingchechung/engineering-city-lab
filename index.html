@@ -51,6 +51,7 @@
   <link rel="modulepreload" href="./js/education-session.js" />
   <link rel="modulepreload" href="./js/education-terminals.js" />
   <link rel="modulepreload" href="./js/education-ui.js" />
+  <link rel="modulepreload" href="./js/education-navigation.js" />
   <link rel="modulepreload" href="./js/main.js" />
   <script type="module" src="./js/main.js"></script>
   <!-- Inter (UI) & Overpass (street-name signs: modelled on Highway Gothic, the US road sign typeface) -->
@@ -136,6 +137,9 @@
         </button>
       </div>
       <span class="toolbar-divider" aria-hidden="true"></span>
+      <button id="btn-return-start" class="tool-btn" type="button" title="Return to Start · keep question progress" aria-label="Return to Start">
+        <svg class="icon" aria-hidden="true"><use href="#i-locate"/></svg><span class="tool-label">Return to Start</span>
+      </button>
       <button id="btn-teleport" class="tool-btn" type="button" popovertarget="teleport-popover" title="Teleport the active player">
         <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span class="tool-label">Teleport</span><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg>
       </button>
@@ -323,6 +327,7 @@
     <p id="education-progress" role="status"></p>
     <p id="education-prompt" hidden></p>
     <p id="education-completion" role="status" hidden>Demo complete! All five questions passed. Continue exploring the city.</p>
+    <p id="education-navigation-status" role="status" hidden></p>
   </aside>
   <dialog id="education-dialog" aria-labelledby="education-title" aria-describedby="education-demo-note education-question">
     <p id="education-demo-note">Synthetic interaction demo · not actual coursework</p>
