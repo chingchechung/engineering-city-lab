@@ -20,7 +20,9 @@ import { NYCMapSystem } from './nyc-map.js';
 import { setupSceneCulling, updateSceneCulling } from './scene-culling.js';
 import { CityAudioSystem } from './audio-system.js';
 import { INTERACTION, initializeEducationStart, nearestTerminal } from './education-config.js';
-import { createDemoSession } from './education-session.js';
+import { createAssignmentSession } from './assignment-session.js';
+import { createAssignmentLoader } from './assignment-loader.js';
+import { createAssignmentUI } from './assignment-ui.js';
 import { createEducationTerminals } from './education-terminals.js';
 import { createEducationUI } from './education-ui.js';
 import { createEducationNavigation } from './education-navigation.js';
@@ -464,11 +466,12 @@ async function initApp() {
   if (openMapBtn) openMapBtn.addEventListener('click', () => mapSystem.toggleFullMap(true));
 
   const returnStartButton = document.getElementById('btn-return-start');
+  const assignmentsButton = document.getElementById('btn-assignments');
   const educationNavigation = createEducationNavigation({
     manager: controllerManager,
     teleport: teleportTo,
     getActors: () => [...trafficSystem.cars, ...trafficSystem.buses, ...highwayTraffic.cars, ...trafficSystem.peds],
-    isBlocked: () => document.getElementById('education-dialog').open,
+    isBlocked: () => Boolean(document.querySelector('dialog[open]')),
     onStatus: (message, ok) => {
       const status = document.getElementById('education-navigation-status');
       status.textContent = message;
@@ -553,19 +556,21 @@ async function initApp() {
     }
   });
 
-  const demoSession = createDemoSession();
+  const demoSession = createAssignmentSession(); // Starts with the unchanged Phase 1 demo.
   let resumeTouch = true, resumeGamepad = true;
   const educationUI = createEducationUI({
     session: demoSession,
     available: () => loadingOverlay.classList.contains('hidden') && !document.hidden && !mapSystem.isFullMapOpen,
     getNearby: () => {
       const entity = controllerManager.getActiveEntity();
-      return nearestTerminal(entity, controllerManager.activeMode,
+      const terminal = nearestTerminal(entity, controllerManager.activeMode,
         controllerManager.getGroundHeight(entity.position.x, entity.position.z, controllerManager.activeMode),
         controllerManager.nearColliders(entity.position.x, entity.position.z, INTERACTION.radius[controllerManager.activeMode] ?? 0));
+      return demoSession.question(terminal?.id) ? terminal : null;
     },
     onPause: () => {
       returnStartButton.disabled = true;
+      assignmentsButton.disabled = true;
       resumeTouch = touchControls.enabled;
       resumeGamepad = gamepadControls.enabled;
       controllerManager.resetInput();
@@ -575,11 +580,29 @@ async function initApp() {
     },
     onResume: () => {
       returnStartButton.disabled = false;
+      assignmentsButton.disabled = false;
       controllerManager.resetInput();
       touchControls.setEnabled(resumeTouch);
       gamepadControls.setEnabled(resumeGamepad);
     },
     onPassed: id => educationTerminals.markPassed(id)
+  });
+  const assignmentLoader = createAssignmentLoader({
+    onReady: (unit, filename) => {
+      demoSession.activate(unit, filename);
+      educationTerminals.setSession(demoSession);
+      educationUI.refresh();
+    }
+  });
+  const assignmentUI = createAssignmentUI({
+    loader: assignmentLoader, session: demoSession,
+    available: () => !educationUI.isOpen && !mapSystem.isFullMapOpen && loadingOverlay.classList.contains('hidden'),
+    onPause: () => educationUI.pauseForSelector(),
+    onResume: () => educationUI.resumeFromSelector()
+  });
+  assignmentsButton.addEventListener('click', () => assignmentUI.open());
+  for (const type of ['keydown', 'keyup']) assignmentsButton.addEventListener(type, event => {
+    if (event.code === 'Space' || event.code === 'Enter') event.stopPropagation();
   });
 
   // Initialize the UI and chase camera around the fixed educational taxi start.

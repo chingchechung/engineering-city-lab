@@ -6,27 +6,29 @@ take precedence over historical plans and rules from other projects.
 
 ## Current authorization
 
-- The instructor authorizes Phase 1.1 on the existing PR #2 branch: distribute
-  five terminals across nearby 36th–38th Street segments, relocate only on explicit
-  ground-to-ground mode changes using bounded safe placement, and add Return to
-  Start without resetting progress. This supersedes Phase 1's independent ground
-  locations and same-block terminal layout. Keep helicopter transitions independent.
-- Update draft PR #2; do not merge, modify main or begin Phase 2. The original
-  controller/physics, city geometry, traffic, rendering and dependencies stay unchanged.
-- Phase 0 PR #1 was reviewed and merged as `974fddf` on 2026-10-24. The instructor
-  authorizes Phase 1's minimal synthetic question MVP, extending the previous
-  placeholder-only scope: fixed car startup, five fixed terminals, ground-mode
-  X interaction, demo answers/feedback and in-memory progress without resets.
-- Preserve independent helicopter transitions; helicopter answering stays disabled.
-  Pause simulation safely during dialogs and keep rendering.
-- No real S01–S12 loader, JSON integration, authoring changes, videos or Forms
-  in Phase 1. Do not modify `ece_hw_webproject`. Open a draft PR and stop for
-  instructor review; do not merge or begin Phase 2.
-- Work on a separate development branch. The reviewed main is `974fddf`; the
-  imported city baseline is `cca9c12a096951d63fee1d26904c04be0a128cef`. Do not commit directly to `main`,
+- Phase 2 is approved after PR #2 (including `c2a93e6`) was reviewed and merged
+  into main as `43f4b2660d11e56c091df89888df7b02e9726a70` on 2026-10-24.
+  The instructor reports 7/7 Windows 11 acceptance checks for Phase 1/1.1;
+  browser versions, GPU measurements and FPS were not supplied.
+- Work on `feature/phase-2-assignment-integration` from that verified main.
+  Reuse the pinned reference's validation algorithms unchanged through a small
+  native-module adapter. Add manifest-allowlisted loading, confirmation-based unit
+  selection and an independent in-memory assignment session with minimal quiz UI.
+- Keep the public manifest empty. Synthetic units belong only under tests.
+  Keep Demo Mode available. Cancellation, stale responses and loading failures
+  preserve the active unit, progress and city location. A confirmed valid
+  replacement resets only question progress; it never reapplies the city start.
+- Retain five reviewed fixed sites, X, radii 3/18/8 m, stationary checks, nearby
+  ground switching, independent helicopter transitions, Return to Start, full
+  maps/teleports and safe modal pause. Four-question units deactivate Q05.
+- No video/Form presentation, teacher GUI changes, real coursework publication,
+  backend, tracking or automatic sync in Phase 2. The reference repository stays
+  read-only. Open a new draft PR and stop for review; do not merge or begin Phase 3.
+- The imported city baseline is `cca9c12a096951d63fee1d26904c04be0a128cef`.
+  Phase 0 PR #1 is preserved at `974fddf`. Do not commit directly to `main`,
   merge, force-push, replace history/tags, deploy, or update upstream automatically.
-- Phase 0 left every imported file byte-identical. Phase 1 permits only necessary
-  educational wiring in main/HTML/CSS and the exact preload-test inventory update;
+- Phase 0 left every imported file byte-identical. Approved integration permits
+  only necessary educational wiring in main/HTML/CSS and exact preload inventory updates;
   keep original city systems, physics, data, dependencies and notices unchanged.
 
 ## Product constraints for later approved work

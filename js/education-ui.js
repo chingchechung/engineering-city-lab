@@ -10,23 +10,42 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
   const progress = document.getElementById('education-progress');
   const completion = document.getElementById('education-completion');
   const dialog = document.getElementById('education-dialog');
+  const selector = document.getElementById('assignment-dialog');
   const form = document.getElementById('education-answer');
   const options = document.getElementById('education-options');
   const feedback = document.getElementById('education-feedback');
   const pressed = new Set(), suppressed = new Set();
-  let current = null, previousFocus = null, ownsPause = false;
+  let current = null, previousFocus = null, owner = null;
+  const isDemo = () => session.mode !== 'assignment';
+  const questions = () => session.questions ?? DEMO_QUESTIONS;
+  const modalOpen = () => dialog.open || Boolean(selector?.open);
 
   function renderProgress() {
-    progress.textContent = `${session.count} / ${DEMO_QUESTIONS.length} demo questions completed`;
+    const total = questions().length;
+    document.getElementById('education-session-label').textContent = isDemo() ? 'Demo Mode · synthetic data' : `${session.unitId} · ${session.unit.title}`;
+    panel.setAttribute('aria-label', isDemo() ? 'Synthetic question demo' : 'Assignment progress');
+    progress.textContent = `${session.count} / ${total} ${isDemo() ? 'demo ' : ''}questions completed`;
+    completion.textContent = isDemo() ? 'Demo complete! All five questions passed. Continue exploring the city.'
+      : `${session.unitId} complete! All ${total} questions passed. Continue exploring the city.`;
     completion.hidden = !session.complete;
   }
 
-  function open(terminal) {
-    current = DEMO_QUESTIONS.find(q => q.id === terminal.id);
-    if (!current) return;
+  function pauseForModal(modal) {
+    if (owner) return;
     previousFocus = document.activeElement;
-    document.getElementById('education-title').textContent = `${current.id} · ${current.title}`;
-    document.getElementById('education-question').textContent = current.prompt;
+    for (const pop of document.querySelectorAll('.popover[popover]')) {
+      if (pop.matches(':popover-open')) pop.hidePopover();
+    }
+    owner = modal;
+    onPause();
+  }
+
+  function open(terminal) {
+    current = questions().find(q => q.id === terminal.id);
+    if (!current) return;
+    document.getElementById('education-demo-note').textContent = isDemo() ? 'Synthetic interaction demo · not actual coursework' : `${session.unitId} · validated assignment`;
+    document.getElementById('education-title').textContent = `${current.id}${current.title ? ' · ' + current.title : ''}`;
+    document.getElementById('education-question').textContent = current.prompt ?? '';
     options.replaceChildren();
     current.options.forEach((text, index) => {
       const label = document.createElement('label');
@@ -36,27 +55,24 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
       caption.textContent = `${radio.value}. ${text}`;
       label.append(radio, caption); options.append(label);
     });
-    feedback.textContent = session.hasPassed(current.id) ? 'Already completed. You can review this demo question.' : '';
+    feedback.textContent = session.hasPassed(current.id) ? `Already completed. You can review this ${isDemo() ? 'demo ' : ''}question.` : '';
     feedback.dataset.result = session.hasPassed(current.id) ? 'correct' : '';
-    for (const pop of document.querySelectorAll('.popover[popover]')) {
-      if (pop.matches(':popover-open')) pop.hidePopover();
-    }
-    onPause(); ownsPause = true;
+    pauseForModal(dialog);
     dialog.showModal();
     options.querySelector('input').focus({ preventScroll: true });
     prompt.hidden = true;
   }
 
-  function cleanup() {
-    if (!ownsPause) return;
-    ownsPause = false;
+  function cleanup(modal = dialog) {
+    if (owner !== modal) return;
+    owner = null;
     current = null;
     for (const code of pressed) suppressed.add(code);
     onResume();
     if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
   }
   function close() { dialog.close(); cleanup(); }
-  dialog.addEventListener('close', cleanup);
+  dialog.addEventListener('close', () => cleanup(dialog));
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
   document.getElementById('education-close').addEventListener('click', close);
   form.addEventListener('submit', event => {
@@ -66,7 +82,7 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
     if (typeof choice !== 'string') { feedback.textContent = 'Choose one answer first.'; return; }
     const correct = session.answer(current.id, choice);
     feedback.dataset.result = correct ? 'correct' : 'incorrect';
-    feedback.textContent = correct ? 'Correct! This demo question is completed.' : 'Incorrect. Try again; your completed questions are kept.';
+    feedback.textContent = correct ? `Correct! This ${isDemo() ? 'demo ' : ''}question is completed.` : 'Incorrect. Try again; your completed questions are kept.';
     if (correct) onPassed(current.id);
     renderProgress();
   });
@@ -74,9 +90,9 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
   // Capture before the original window-level movement/map/camera listeners.
   window.addEventListener('keydown', event => {
     pressed.add(event.code);
-    if (dialog.open) {
+    if (modalOpen()) {
       event.stopImmediatePropagation();
-      if (event.code === 'Escape') { event.preventDefault(); close(); }
+      if (event.code === 'Escape' && dialog.open) { event.preventDefault(); close(); }
       return; // Keep native radio, Enter and Tab default actions inside the modal.
     }
     if (suppressed.has(event.code)) { event.preventDefault(); event.stopImmediatePropagation(); return; }
@@ -87,18 +103,21 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
   }, true);
   window.addEventListener('keyup', event => {
     pressed.delete(event.code);
-    if (suppressed.delete(event.code) || dialog.open) event.stopImmediatePropagation();
+    if (suppressed.delete(event.code) || modalOpen()) event.stopImmediatePropagation();
   }, true);
   const clear = () => { pressed.clear(); suppressed.clear(); };
   window.addEventListener('blur', clear);
   document.addEventListener('visibilitychange', () => { if (document.hidden) clear(); });
   renderProgress();
   return {
-    get isOpen() { return dialog.open; },
+    get isOpen() { return modalOpen(); },
+    pauseForSelector() { pauseForModal(selector); },
+    resumeFromSelector() { cleanup(selector); },
+    refresh() { renderProgress(); this.update(); },
     update() {
       const show = available();
       panel.hidden = !show;
-      const nearby = show && !dialog.open ? getNearby() : null;
+      const nearby = show && !modalOpen() ? getNearby() : null;
       prompt.hidden = !nearby;
       if (nearby) prompt.textContent = `Press X to answer ${nearby.id}${session.hasPassed(nearby.id) ? ' · completed' : ''}`;
     }

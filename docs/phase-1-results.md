@@ -5,8 +5,11 @@ main `974fddf2feecc96faf6856818f2eb452f83991df` (merged Phase 0 PR #1). The inst
 explicitly extended Phase 1 from placeholders to an end-to-end synthetic demo.
 This change stops at a draft PR for review; it does not authorize Phase 2 or merging.
 
-Phase 1.1 implementation and cloud verification are complete; draft PR #2 remains
-the review gate. Physical Windows review is still required.
+Phase 1/1.1 was subsequently reviewed and PR #2 merged as
+`43f4b2660d11e56c091df89888df7b02e9726a70` on 2026-10-24 (Asia/Taipei).
+The instructor reports **7/7 Windows 11 manual acceptance checks passed**.
+This is instructor-reported evidence; browser versions, GPU measurements and
+FPS were not provided. The historical cloud results below remain separate.
 
 The instructor subsequently approved Phase 1.1 on this same draft PR branch,
 starting at `f9e9d86`: distribute terminals, synchronize explicit ground-mode
@@ -176,8 +179,9 @@ The Phase 1 full-city browser run **passed** on Linux Chromium **154.0.8037.57**
 with no page-script errors or GPU device loss on the successful Vulkan run.
 All native interaction checks below passed against the revised Q02 coordinate,
 including bicycle answering, moving-car rejection and map/preset teleportation.
-Startup, dialog and all five final-site screenshots were inspected. Physical
-Windows 11 Chrome/Edge verification remains for the instructor's review.
+Startup, dialog and all five final-site screenshots were inspected. At that
+stage, physical Windows 11 Chrome/Edge verification was pending; the subsequent
+instructor-reported acceptance is recorded above.
 
 Commands from the repository root:
 
@@ -266,7 +270,7 @@ No Node/npm install is needed to play. Stop the server with Ctrl+C when finished
    view, audio, focus/tab interruptions and available touch/gamepad hardware.
    Progress stays in memory until a deliberate page reload.
 
-Physical Windows 11 checks, Intel GPU behavior, macOS/Safari, mobile and real
-gamepad hardware were not verified in cloud automation. Record those observations
-during instructor review. Do not merge this PR or start S01–S12 integration
-until that review explicitly authorizes the next step.
+Physical Windows 11 checks were not performed by cloud automation; the instructor
+subsequently reported the 7/7 acceptance result above. Intel GPU measurements,
+macOS/Safari, mobile and real gamepad hardware were not independently verified.
+Phase 2 is now separately authorized following the verified PR #2 merge.

@@ -26,7 +26,7 @@ test('city module preloads start after the import map and before stylesheets', (
 
 test('native module entry and imports share canonical preloaded URLs on GitHub Pages', () => {
   const links = preloads.map((match) => match[1]);
-  assert.equal(links.length, 34); // The 29 imported city modules plus five educational extension modules.
+  assert.equal(links.length, 40); // The 29 imported city modules plus eleven educational/assignment modules.
   assert.equal(new Set(links).size, links.length, 'each module is preloaded once');
   assert.equal(entries.length, 1);
   assert.equal(entries[0][1], './js/main.js');

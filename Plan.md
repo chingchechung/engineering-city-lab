@@ -1,7 +1,8 @@
 # Engineering City Lab — phased plan
 
-Status: **Phase 1.1 usability improvements implemented on the existing draft PR #2
-branch on 2026-10-24; awaiting instructor review. Do not merge or begin Phase 2.**
+Status: **Phase 1/1.1 PR #2 reviewed and merged as `43f4b26`; Phase 2 assignment
+integration implemented on 2026-10-24 and awaiting instructor review. Keep its
+new PR a draft; do not merge or begin Phase 3.**
 
 Prepared on 2026-10-23 (Asia/Taipei). This project adds Digital Electronics
 assignments to the imported Slop New York city. It does not rebuild the city or
@@ -123,12 +124,16 @@ The full-city Chromium check walked to all five sites using the original movemen
 code, measuring 11.46–144.02 m from the returned walking position. Nearby ground
 switching, helicopter independence and Return from every mode passed. See the
 [Phase 1.1 verification record](docs/phase-1-results.md#verification) for coordinates,
-measurements, browser limits and the remaining physical Windows review.
+measurements and browser limits. The subsequent instructor-reported Windows
+acceptance is recorded at the Phase 2 entry below.
 
 ## Phase 2 — assignment contract and session adapter
 
-Requires Phase 1 approval. Review the reference version and reuse/licensing
-record before porting validated components.
+Approved from verified main `43f4b2660d11e56c091df89888df7b02e9726a70`, after
+PR #2 merged with `c2a93e6`. Branch: `feature/phase-2-assignment-integration`.
+The instructor reports **7/7 Windows 11 checks passed** for Phase 1/1.1; this is
+separate from cloud tests, with no supplied browser versions, GPU data or FPS.
+The unchanged 137-test baseline passed in 37.834 s before implementation.
 
 - Bring over only reviewed v1/v2 schemas, pure validation/rules and synthetic
   contract cases, with source revision and license attribution. Do not port
@@ -146,17 +151,30 @@ record before porting validated components.
 - Verify Python/JavaScript/schema parity against the existing reference cases,
   all twelve allowed unit IDs, three/four options, four/five questions and
   explicit version errors. Add tests for every city-specific state rule.
+- Keep `assignments/manifest.json` empty and use only test-path fixtures for
+  synthetic validation/browser checks. Demo Mode remains the default.
+- Use the existing question dialog with the minimum adaptation for validated
+  options/progress. No video, explanation or Form presentation until Phase 3.
+- Pause/input/focus behavior also covers the selector. Opening/cancelling keeps
+  the city location. Confirmed replacement commits only after validation and
+  resets question progress without repositioning any city entity.
 
 Exit evidence: synthetic units load and validate in v1/v2, retry preserves
 progress, failed/cancelled switches preserve the active unit, and unchanged city
 regressions pass. **Stop for review.**
 
+Implementation and verification: [docs/phase-2-results.md](docs/phase-2-results.md).
+The final Node suite passed 171/171 (137 existing + 34 new); five Python tests
+checked 364 shared validation cases and 76 answer selections. The real-city
+Chromium run passed 12 check groups beneath a nested hosting path. The public
+manifest remains empty, and physical Windows Phase 2 acceptance is pending.
+
 ## Phase 3 — complete educational interaction
 
 Requires Phase 2 approval.
 
-- Connect the approved synthetic interaction UI to questions/options/feedback
-  from the validated unit. Preserve supplied text and option order; use safe DOM APIs.
+- Extend Phase 2's minimal validated-unit dialog into the final learner workflow.
+  Preserve supplied question/options/feedback text and option order; use safe DOM APIs.
 - Offer the question video and, after a correct answer, optional explanation
   video/text. Open external links only by explicit user action.
 - Show progress for the active four/five questions. Unlock the existing unit's

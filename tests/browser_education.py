@@ -21,7 +21,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(output):
+def run(output, assignments=False, base_path=''):
     output.mkdir(parents=True, exist_ok=True)
     cache = output / 'cdn-cache'
     cache.mkdir(exist_ok=True)
@@ -30,6 +30,10 @@ def run(output):
     class QuietHandler(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *_args):
             pass
+        def translate_path(self, path):
+            if base_path and path.startswith('/' + base_path):
+                path = '/' + path[len(base_path) + 1:]
+            return super().translate_path(path)
 
     server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -76,7 +80,7 @@ def run(output):
                 assert source.count(needle) == 1
                 observe = """  window.__city = {controllerManager, cameraSystem, mapSystem,
                   trafficSystem, highwayTraffic, scene, renderer, streetDetails, allColliders,
-                  educationUI, educationNavigation, demoSession, get elapsed(){return elapsed;},
+                  educationUI, educationNavigation, demoSession, assignmentLoader, assignmentUI, get elapsed(){return elapsed;},
                   starts: Object.fromEntries(Object.entries(controllerManager.entities).map(([k,e])=>
                     [k,{x:e.position.x,y:e.position.y,z:e.position.z,heading:e.heading}]))};
                 renderer.backend.device.lost.then(info => window.__gpuLost = info.message);
@@ -126,7 +130,7 @@ def run(output):
                 route.fulfill(body=source.replace(needle, observe + needle), content_type='application/javascript')
 
             page.route('**/js/main.js', observe_main)
-            page.goto(f'http://127.0.0.1:{server.server_port}/', wait_until='domcontentloaded', timeout=120000)
+            page.goto(f'http://127.0.0.1:{server.server_port}/{base_path}', wait_until='domcontentloaded', timeout=120000)
             try:
                 page.locator('#loading-overlay.hidden').wait_for(state='attached', timeout=600000)
                 page.wait_for_function('window.__testReady', timeout=600000)
@@ -284,6 +288,9 @@ def run(output):
                   return c.mapSystem.waypoint.x===p.x && c.mapSystem.waypoint.z===p.z;}''')
                 assert page.evaluate('__city.demoSession.count') == 5
                 checks.append('normal walking reaches all five sites under 250 m; completion, map/preset teleports and driving preserve progress')
+                if assignments:
+                    from browser_assignments import check_assignments
+                    check_assignments(page, output, checks, base_path)
                 assert not errors, errors
                 assert not page.evaluate('window.__gpuLost'), 'WebGPU device was lost during the check'
                 print(json.dumps({'checks': checks, 'starts': starts, 'sites': sites, 'routes':routes, 'browser': browser.version}, indent=2), flush=True)
@@ -299,4 +306,8 @@ def run(output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=Path('/tmp/city-education-evidence'))
-    run(parser.parse_args().output)
+    parser.add_argument('--assignments', action='store_true', help='Also exercise the Phase 2 selector and test-only routed units')
+    parser.add_argument('--base-path', default='', help='Optional nested deployment prefix, e.g. course/city/')
+    args = parser.parse_args()
+    prefix = args.base_path.strip('/')
+    run(args.output, args.assignments, prefix + '/' if prefix else '')

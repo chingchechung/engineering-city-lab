@@ -1,7 +1,8 @@
-# Future S01–S12 assignment integration boundary
+# S01–S12 assignment integration boundary
 
-Phase 0 reference inspection only; no schema, loader, question or answer data has
-been copied into the city repository.
+Originally prepared during Phase 0. Phase 2 now ports the approved contracts,
+validator and test-only synthetic fixtures from the revision below. See
+[Phase 2 results](phase-2-results.md) for adapters, reuse notices and verification.
 
 Source: [chingchechung/ece_hw_webproject](https://github.com/chingchechung/ece_hw_webproject),
 `main` at **70cc35d9ce828bcd5357f16fe85f303aa2d30cd9**, subject
@@ -82,9 +83,9 @@ Recommended module boundary for later work: a pure validated assignment model
 and answer helper, a loader, a session store keyed by `unitId`/question ID, a
 fixed city-terminal adapter and a scoped DOM interaction view. Keep the city
 controllers, traffic, map and rendering independent of answer correctness.
-Before selecting another unit, record a reviewed policy for whether its deliberate
-new session also reapplies the fixed start. This does not affect ordinary travel
-or retry behavior and is not implemented in Phase 0.
+The approved Phase 2 replacement policy resets only question progress after
+confirmation and validation; it preserves the city location and never reapplies
+the fixed start. Cancellation/failure keeps the old assignment and its progress.
 
 ## Authoring, privacy and publication
 
