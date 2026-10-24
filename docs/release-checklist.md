@@ -16,9 +16,11 @@ See [Phase 4 results](phase-4-results.md) for final commands, evidence and inven
 - [x] Packaged files pass real nested HTTP MIME/404/UTF-8/redirect checks.
 - [x] Native Chromium nested module/manifest loading, direct navigation/refresh
   and attribution/license accessibility pass, including a tilde-prefixed path.
-- [ ] Full-city packaged learner regression: final outcome in the Phase 4 record.
+- [x] Full-city packaged learner regression: 19 groups passed with six native
+  intercepted external actions; no page-script errors or GPU device loss.
 - [x] Lightweight CI commands pass locally; workflow has no publishing permission.
-- [ ] Hosted GitHub Actions result: final outcome in the Phase 4 record.
+- [x] Hosted GitHub Actions required steps pass; see the Phase 4 record and
+  draft PR #5's live checks for the exact run/head.
 - [x] Apache installation, teacher publication, source/license/data attribution,
   public answers, in-memory progress and external dependency limits documented.
 - [ ] Instructor reviews the draft Phase 4 PR and license/data-source conditions.

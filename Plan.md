@@ -1,8 +1,8 @@
 # Engineering City Lab — phased plan
 
 Status: **Phase 3 PR #4 reviewed and merged as `dba670b`; Phase 4 release
-preparation is authorized on `feature/phase-4-release-preparation`. Preserve
-accepted functionality and stop at a new draft PR for instructor review.**
+candidate prepared on `feature/phase-4-release-preparation`. Draft PR #5 awaits
+instructor review. Do not merge, deploy, publish units or start another phase.**
 
 Prepared on 2026-10-23 (Asia/Taipei). This project adds Digital Electronics
 assignments to the imported Slop New York city. It does not rebuild the city or

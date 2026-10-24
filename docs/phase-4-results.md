@@ -62,8 +62,16 @@ redirect/direct root/refresh, UTF-8 unit JSON in an isolated test copy and real
 404s for missing/publicly excluded paths. No real package or repository receives
 fixtures from those tests.
 
-Syntax and schema/runtime integrity pass; final file counts and hosted CI results
-are recorded below after final verification.
+Syntax passed for **66 JavaScript and 15 Python files**; all three schemas,
+the empty public manifest and runtime package integrity pass. All **39 local
+Markdown link targets** resolve, the exact 18-file report inventory matches Git,
+and whitespace checks pass. Runtime/data/schema/fixture preservation and the
+Three.js import-map block were independently compared byte-for-byte to the
+reviewed main. The reference checkout stays clean at `70cc35d`.
+
+Hosted GitHub Actions also passed all setup and required test steps on
+`39a2d58`: [regression run 40093349558](https://github.com/chingchechung/engineering-city-lab/actions/runs/40093349558).
+The final PR head's live check is verified again after the evidence-only update.
 
 ```sh
 python3 tests/browser_learning_dom.py --output /tmp/city-phase4-dom
@@ -82,10 +90,21 @@ at 1280×800 and 390×844 in city/clean/full-map views, and keyboard opening of 
 packaged license page with no opener and a relative geographic database link.
 It does not initialize a renderer and blocks external requests.
 
-Full-city package run: awaiting final completion; update this record before PR
-completion. It serves HTML/CSS/modules from the generated **47-file candidate**,
-including main instrumentation from that package, while synthetic assignments
-remain browser test routes from the test checkout. No test file is packaged.
+The full-city package run passed **all 19 check groups** with **six explicitly
+activated external tabs**, zero page-script errors and no GPU device loss.
+Demo, v2 four-question and v1 five-question completion, single-label answers,
+retry/review, optional explanations, Form unlocking, small viewport, full-map Form,
+failed/cancelled/stale load preservation, successful replacement cleanup, Return,
+mode/camera changes and original map/preset teleports all passed. Normal walking
+reached all five unchanged sites in 84.49 / 11.46 / 67.68 / 143.91 / 135.30 metres,
+all under 250 m. The two expected console resource failures are the deliberately
+blocked font and deliberate HTTP 503 test case.
+
+It served HTML/CSS/modules from the generated **47-file candidate**, including
+main instrumentation from that package, while synthetic assignments remained
+browser test routes from the test checkout. No test file is packaged. The
+explanation/four-question/mobile-HUD/five-question and attribution captures were
+inspected; the original city and prominent completion Form remain readable.
 
 All synthetic provider requests are intercepted before any contact. Full-city
 software Vulkan, deterministic production-frame stepping and cached exact CDN
@@ -94,13 +113,21 @@ in cloud and existing fallbacks are used; this is not evidence of Google Fonts
 availability. No physical Windows results, live media/submission verification,
 hardware GPU throughput or FPS measurements are inferred.
 
+A separate current-network probe fetched the original Three.js webgpu/tsl builds
+and BufferGeometryUtils addon via normal verified TLS: all returned HTTP 200,
+JavaScript MIME types and bytes matching the browser test cache. Exact response
+hashes are in `/tmp/city-phase4-cdn-probe.json`. This limited probe confirms those
+three resources at this time, not an immutable full dependency snapshot, future
+CDN availability or access from the university network.
+
 ## Package and evidence
 
 ```sh
 python3 tools/package_release.py --output /tmp/engineering-city-lab-release
 ```
 
-Generated candidate: **47 files**, about **2.6 MiB on disk**, no archive committed.
+Generated candidate: **47 files**, **2,604,058 content bytes** (about 2.6 MiB on
+disk), no archive committed.
 All bytes match their source; repeated build inventory/content is identical.
 Contents are index, 40 modules, three stylesheets, the empty public manifest and
 two notices. The public assignment directory contains only `manifest.json` with
@@ -113,6 +140,8 @@ Logs/evidence remain outside Git: `/tmp/city-phase4-baseline.tap`,
 `/tmp/city-phase4-final.tap`, `/tmp/city-phase4-python.log`, `/tmp/city-phase4-dom/`,
 `/tmp/city-phase4-static-browser/`, `/tmp/city-phase4-browser/` and their associated
 `.log` files. Reproduce with [deployment commands](deployment.md#regression-and-ci).
+The complete package file/size/SHA-256 inventory is
+`/tmp/city-phase4-package-inventory.json` and `/tmp/city-phase4-package.sha256`.
 The package is local only and has not been uploaded anywhere.
 
 ## Exact changed files
