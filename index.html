@@ -52,6 +52,12 @@
   <link rel="modulepreload" href="./js/education-terminals.js" />
   <link rel="modulepreload" href="./js/education-ui.js" />
   <link rel="modulepreload" href="./js/education-navigation.js" />
+  <link rel="modulepreload" href="./js/assignment-rules.js" />
+  <link rel="modulepreload" href="./js/assignment-validator.js" />
+  <link rel="modulepreload" href="./js/assignment-contract.js" />
+  <link rel="modulepreload" href="./js/assignment-loader.js" />
+  <link rel="modulepreload" href="./js/assignment-session.js" />
+  <link rel="modulepreload" href="./js/assignment-ui.js" />
   <link rel="modulepreload" href="./js/main.js" />
   <script type="module" src="./js/main.js"></script>
   <!-- Inter (UI) & Overpass (street-name signs: modelled on Highway Gothic, the US road sign typeface) -->
@@ -323,11 +329,12 @@
   </section>
 
   <aside id="education-hud" aria-label="Synthetic question demo" hidden>
-    <strong>Question demo · synthetic data</strong>
+    <strong id="education-session-label">Demo Mode · synthetic data</strong>
     <p id="education-progress" role="status"></p>
     <p id="education-prompt" hidden></p>
     <p id="education-completion" role="status" hidden>Demo complete! All five questions passed. Continue exploring the city.</p>
     <p id="education-navigation-status" role="status" hidden></p>
+    <button id="btn-assignments" class="education-selector-button" type="button">Assignments</button>
   </aside>
   <dialog id="education-dialog" aria-labelledby="education-title" aria-describedby="education-demo-note education-question">
     <p id="education-demo-note">Synthetic interaction demo · not actual coursework</p>
@@ -344,6 +351,24 @@
         <button id="education-close" type="button">Close</button>
       </div>
     </form>
+  </dialog>
+  <dialog id="assignment-dialog" aria-labelledby="assignment-title" aria-describedby="assignment-status">
+    <h2 id="assignment-title">Assignments</h2>
+    <p id="assignment-status" role="status" tabindex="-1"></p>
+    <label for="assignment-unit">Published unit</label>
+    <select id="assignment-unit" disabled></select>
+    <div class="education-actions">
+      <button id="assignment-load" type="button" disabled>Load Unit</button>
+      <button id="assignment-refresh" type="button">Refresh List</button>
+      <button id="assignment-close" type="button">Close</button>
+    </div>
+    <section id="assignment-switch" aria-label="Confirm unit replacement" hidden>
+      <p id="assignment-switch-message"></p>
+      <div class="education-actions">
+        <button id="assignment-confirm" type="button">Confirm Replacement</button>
+        <button id="assignment-cancel" type="button">Cancel</button>
+      </div>
+    </section>
   </dialog>
 </body>
 </html>

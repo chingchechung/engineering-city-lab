@@ -20,7 +20,7 @@ body.hud-minimized #education-hud { display: none; }
 #education-completion { margin-top: 6px; color: var(--ok); }
 #education-navigation-status { margin-top: 6px; color: var(--text-2); }
 #education-navigation-status[data-result="error"] { color: var(--bad); }
-#education-dialog {
+#education-dialog, #assignment-dialog {
   margin: auto;
   width: min(480px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
@@ -33,7 +33,7 @@ body.hud-minimized #education-hud { display: none; }
   box-shadow: var(--shadow);
   line-height: 1.5;
 }
-#education-dialog::backdrop { background: rgb(0 0 0 / 45%); }
+#education-dialog::backdrop, #assignment-dialog::backdrop { background: rgb(0 0 0 / 45%); }
 #education-demo-note { color: var(--taxi); font-size: 12px; margin-bottom: 8px; }
 #education-question { margin: 12px 0; }
 #education-dialog fieldset { border: 0; }
@@ -56,6 +56,9 @@ body.hud-minimized #education-hud { display: none; }
 .education-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .education-actions button { padding: 10px 16px; border: 1px solid var(--glass-border); border-radius: 8px; }
 .education-actions button[type="submit"] { background: var(--taxi); color: var(--taxi-ink); }
+.education-selector-button { pointer-events: auto; margin-top: 8px; padding: 5px 12px; border: 1px solid var(--glass-border); border-radius: 6px; }
+#assignment-status, #assignment-switch { margin: 12px 0; }
+#assignment-unit { display: block; width: 100%; margin: 8px 0 16px; padding: 8px; color: var(--text); background: #181d24; }
 @media (max-width: 600px) {
   #education-hud { top: 140px; left: 12px; max-width: calc(100vw - 24px); }
 }
