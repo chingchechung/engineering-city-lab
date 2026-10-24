@@ -4,7 +4,22 @@ function typing(target) {
   return target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target?.tagName);
 }
 
-export function createEducationUI({ session, getNearby, available, onPause, onResume, onPassed }) {
+// Project the existing validated session into link availability; never track a second completion state.
+export function questionResources(session, question) {
+  const active = session.mode === 'assignment' && session.questions.includes(question);
+  const passed = active && session.hasPassed(question.id);
+  return {
+    questionVideoUrl: active ? question.questionVideoUrl : null,
+    explanationVideoUrl: passed ? question.explanationVideoUrl : null,
+    explanationText: passed && question.explanationText?.trim() ? question.explanationText : null
+  };
+}
+
+export function completionFormUrl(session) {
+  return session.mode === 'assignment' && session.complete ? session.unit.googleFormUrl : null;
+}
+
+export function createEducationUI({ session, getNearby, available, progressAvailable = available, onPause, onResume, onPassed }) {
   const panel = document.getElementById('education-hud');
   const prompt = document.getElementById('education-prompt');
   const progress = document.getElementById('education-progress');
@@ -14,12 +29,31 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
   const form = document.getElementById('education-answer');
   const options = document.getElementById('education-options');
   const feedback = document.getElementById('education-feedback');
+  const questionVideo = document.getElementById('education-question-video');
+  const explanation = document.getElementById('education-explanation');
+  const explanationVideo = document.getElementById('education-explanation-video');
+  const explanationTextSection = document.getElementById('education-explanation-text-section');
+  const explanationText = document.getElementById('education-explanation-text');
+  const formLinks = [document.getElementById('education-unit-form'), document.getElementById('education-dialog-form')];
   const pressed = new Set(), suppressed = new Set();
   let current = null, previousFocus = null, owner = null;
   const isDemo = () => session.mode !== 'assignment';
   const questions = () => session.questions ?? DEMO_QUESTIONS;
   const modalOpen = () => dialog.open || Boolean(selector?.open);
 
+  function setLink(element, url) {
+    element.hidden = !url;
+    if (url) element.setAttribute('href', url);
+    else element.removeAttribute('href');
+  }
+  function renderResources() {
+    const resources = questionResources(session, current);
+    setLink(questionVideo, resources.questionVideoUrl);
+    setLink(explanationVideo, resources.explanationVideoUrl);
+    explanation.hidden = !resources.explanationVideoUrl;
+    explanationTextSection.hidden = !resources.explanationText;
+    explanationText.textContent = resources.explanationText ?? '';
+  }
   function renderProgress() {
     const total = questions().length;
     document.getElementById('education-session-label').textContent = isDemo() ? 'Demo Mode · synthetic data' : `${session.unitId} · ${session.unit.title}`;
@@ -28,6 +62,7 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
     completion.textContent = isDemo() ? 'Demo complete! All five questions passed. Continue exploring the city.'
       : `${session.unitId} complete! All ${total} questions passed. Continue exploring the city.`;
     completion.hidden = !session.complete;
+    for (const link of formLinks) setLink(link, completionFormUrl(session));
   }
 
   function pauseForModal(modal) {
@@ -57,6 +92,7 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
     });
     feedback.textContent = session.hasPassed(current.id) ? `Already completed. You can review this ${isDemo() ? 'demo ' : ''}question.` : '';
     feedback.dataset.result = session.hasPassed(current.id) ? 'correct' : '';
+    renderResources();
     pauseForModal(dialog);
     dialog.showModal();
     options.querySelector('input').focus({ preventScroll: true });
@@ -67,12 +103,13 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
     if (owner !== modal) return;
     owner = null;
     current = null;
+    renderResources();
     for (const code of pressed) suppressed.add(code);
     onResume();
     if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
   }
   function close() { dialog.close(); cleanup(); }
-  dialog.addEventListener('close', () => cleanup(dialog));
+  dialog.addEventListener('close', () => { if (!dialog.open) cleanup(dialog); }); // Ignore an older queued close after a rapid reopen.
   dialog.addEventListener('cancel', event => { event.preventDefault(); close(); });
   document.getElementById('education-close').addEventListener('click', close);
   form.addEventListener('submit', event => {
@@ -85,6 +122,12 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
     feedback.textContent = correct ? `Correct! This ${isDemo() ? 'demo ' : ''}question is completed.` : 'Incorrect. Try again; your completed questions are kept.';
     if (correct) onPassed(current.id);
     renderProgress();
+    renderResources();
+  });
+
+  // Keep native link navigation while stopping Enter/Space from reaching city controls in the HUD.
+  for (const type of ['keydown', 'keyup']) formLinks[0].addEventListener(type, event => {
+    if (event.code === 'Enter' || event.code === 'Space') event.stopPropagation();
   });
 
   // Capture before the original window-level movement/map/camera listeners.
@@ -109,15 +152,18 @@ export function createEducationUI({ session, getNearby, available, onPause, onRe
   window.addEventListener('blur', clear);
   document.addEventListener('visibilitychange', () => { if (document.hidden) clear(); });
   renderProgress();
+  renderResources();
   return {
     get isOpen() { return modalOpen(); },
     pauseForSelector() { pauseForModal(selector); },
     resumeFromSelector() { cleanup(selector); },
-    refresh() { renderProgress(); this.update(); },
+    refresh() { renderProgress(); renderResources(); this.update(); },
     update() {
-      const show = available();
+      const canInteract = available();
+      const show = canInteract || (progressAvailable() && Boolean(completionFormUrl(session)));
       panel.hidden = !show;
-      const nearby = show && !modalOpen() ? getNearby() : null;
+      panel.classList.toggle('education-over-map', show && !canInteract);
+      const nearby = canInteract && !modalOpen() ? getNearby() : null;
       prompt.hidden = !nearby;
       if (nearby) prompt.textContent = `Press X to answer ${nearby.id}${session.hasPassed(nearby.id) ? ' · completed' : ''}`;
     }

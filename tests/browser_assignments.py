@@ -10,13 +10,17 @@ from playwright.sync_api import Error
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def check_assignments(page, output, checks, base_path):
+def check_assignments(page, output, checks, base_path, workflow=False):
     selector = page.locator('#assignment-dialog')
     status = page.locator('#assignment-status')
     positions = 'Object.fromEntries(Object.entries(__city.controllerManager.entities).map(([k,e])=>[k,e.position.toArray()]))'
     colors = '__city.scene.getObjectByName("EducationDemoTerminals").children.map(t=>t.children[1].material.color.getHex())'
+    learning = None
+    if workflow:
+        from browser_learning_workflow import LearningWorkflowChecks
+        learning = LearningWorkflowChecks(page,output,checks)
     def snapshot():
-        return page.evaluate(f'({{positions:{positions}, colors:{colors}, mode:__city.controllerManager.activeMode, count:__city.demoSession.count, unit:__city.demoSession.unitId}})')
+        return page.evaluate(f'({{positions:{positions}, colors:{colors}, mode:__city.controllerManager.activeMode, count:__city.demoSession.count, unit:__city.demoSession.unitId, form:document.getElementById("education-unit-form").getAttribute("href"),formHidden:document.getElementById("education-unit-form").hidden}})')
 
     def open_selector():
         page.get_by_role('button', name='Assignments', exact=True).click()
@@ -48,6 +52,7 @@ def check_assignments(page, output, checks, base_path):
 
     fixture = lambda version, unit_id: json.loads((ROOT/f'tests/fixtures/{"v2/" if version == 2 else ""}{unit_id}.json').read_text())
     a, b = fixture(2, 'S01'), fixture(1, 'S02')
+    if learning: learning.prepare_units(a,b)
     units = { 'S01.json': a, 'S02.json': b }
     manifest = {'schemaVersion':1,'units':[{'unitId':u['unitId'],'title':u['title'],'file':name} for name,u in units.items()]}
     state = {'manifest':manifest,'failure':None,'hold':False}
@@ -120,8 +125,10 @@ def check_assignments(page, output, checks, base_path):
         page.wait_for_function('document.getElementById("education-dialog").open')
         assert page.locator('#education-title').inner_text().startswith(question_id)
         assert page.locator('#education-demo-note').inner_text() == f'{unit_id} · validated assignment'
+        if learning: learning.before_answer(unit_id,question_id)
         page.locator(f'input[name="demo-answer"][value="{label}"]').check()
         page.get_by_role('button', name='Submit Answer', exact=True).click()
+        if learning: learning.after_answer(unit_id,question_id)
 
     # Three options show three radios. Q02 accepts C as a single selection as well as B.
     question('S01','Q01','B')
@@ -131,6 +138,7 @@ def check_assignments(page, output, checks, base_path):
     page.locator('input[name="demo-answer"][value="A"]').check()
     page.get_by_role('button', name='Submit Answer', exact=True).click()
     assert page.evaluate('__city.demoSession.count') == 1
+    if learning: learning.after_answer('S01','Q01')
     page.get_by_role('button', name='Close', exact=True).click()
     question('S01','Q02','C')
     assert page.locator('#education-options input').count() == 4
@@ -154,6 +162,7 @@ def check_assignments(page, output, checks, base_path):
     assert 'All 4 questions passed' in page.locator('#education-completion').inner_text()
     page.evaluate('__step()')  # Render the newly passed marker before capturing completion colors.
     page.screenshot(path=str(output/'assignment-four-complete.png'), timeout=180000)
+    if learning: learning.four_complete()
     checks.append('v2 three/four radios, one accepted label, incorrect retry/review, four-question completion and Q05 denial')
     print('Browser Phase 2: v2 interaction and four-question completion passed', flush=True)
 
@@ -163,8 +172,10 @@ def check_assignments(page, output, checks, base_path):
     for key in ['1','3','2','4','2','v']:
         page.keyboard.press(key)
     page.keyboard.press('m')
+    if learning: learning.map_form()
     page.locator('#fullmap-canvas').click(position={'x':550,'y':400})
     page.keyboard.press('Escape')
+    if learning: page.evaluate('__step()')
     page.locator('[popovertarget="teleport-popover"]').click()
     page.locator('[data-teleport="centralpark"]').click()
     assert page.evaluate('__city.demoSession.unitId') == 'S01'
@@ -216,6 +227,7 @@ def check_assignments(page, output, checks, base_path):
     assert page.evaluate(positions) == before['positions']
     assert page.evaluate('__city.demoSession.count') == 0
     assert page.evaluate('__city.demoSession.total') == 5
+    if learning: learning.replaced()
     assert page.evaluate('__city.scene.getObjectByName("DemoTerminal-Q05").visible')
     question('S02','Q05','A')
     assert page.locator('#education-options input').count() == 4
@@ -227,6 +239,7 @@ def check_assignments(page, output, checks, base_path):
     expected_prefix = f'/{base_path}assignments/'
     assert all(expected_prefix in url for url in requests), requests
     assert all(url.endswith(('manifest.json','S01.json','S02.json')) for url in requests), requests
+    if learning: learning.finish_five(question)
     checks.append('v1 five-question replacement restores fixed Q05; nested relative paths and exact manifest allowlisting')
     (output/'assignment-requests.json').write_text(json.dumps(requests,indent=2))
     print('Browser Phase 2: failures/cancellation, v1 replacement, travel and nested paths passed', flush=True)

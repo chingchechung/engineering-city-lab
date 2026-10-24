@@ -21,7 +21,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(output, assignments=False, base_path=''):
+def run(output, assignments=False, base_path='', workflow=False):
     output.mkdir(parents=True, exist_ok=True)
     cache = output / 'cdn-cache'
     cache.mkdir(exist_ok=True)
@@ -290,7 +290,7 @@ def run(output, assignments=False, base_path=''):
                 checks.append('normal walking reaches all five sites under 250 m; completion, map/preset teleports and driving preserve progress')
                 if assignments:
                     from browser_assignments import check_assignments
-                    check_assignments(page, output, checks, base_path)
+                    check_assignments(page, output, checks, base_path, workflow=workflow)
                 assert not errors, errors
                 assert not page.evaluate('window.__gpuLost'), 'WebGPU device was lost during the check'
                 print(json.dumps({'checks': checks, 'starts': starts, 'sites': sites, 'routes':routes, 'browser': browser.version}, indent=2), flush=True)
@@ -308,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=Path, default=Path('/tmp/city-education-evidence'))
     parser.add_argument('--assignments', action='store_true', help='Also exercise the Phase 2 selector and test-only routed units')
     parser.add_argument('--base-path', default='', help='Optional nested deployment prefix, e.g. course/city/')
+    parser.add_argument('--workflow', action='store_true', help='Also test Phase 3 native video/explanation/Form actions with intercepted external tabs')
     args = parser.parse_args()
     prefix = args.base_path.strip('/')
-    run(args.output, args.assignments, prefix + '/' if prefix else '')
+    run(args.output, args.assignments or args.workflow, prefix + '/' if prefix else '', args.workflow)

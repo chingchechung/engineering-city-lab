@@ -36,7 +36,9 @@ in the read-only reference checkout; the implementation report records the check
 
 This is **15 byte-identical files**. Fixtures are never placed in the public
 assignment directory. Their example video/Form URLs are validation inputs only;
-Phase 2 does not open, embed or present those links.
+Phase 2 did not present those links. Phase 3 exposes validated assignment links
+only through explicit learner actions; provider requests are mocked in fixture
+tests and the optional headed manual-review harness. Fixtures remain unpublished.
 
 ## Reviewed adaptations
 

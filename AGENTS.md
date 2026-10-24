@@ -6,11 +6,35 @@ take precedence over historical plans and rules from other projects.
 
 ## Current authorization
 
-- Phase 2 is approved after PR #2 (including `c2a93e6`) was reviewed and merged
+- Phase 3 is approved after PR #3 was merged into main as
+  `1a362c95fb073b7652028ba47388185936d1cf02` on 2026-10-24. GitHub verified this
+  was the latest main before creating `feature/phase-3-learning-workflow`.
+  The instructor reports 9/9 Windows 11 Phase 2 acceptance checks passed;
+  no browser versions, GPU measurements or FPS were supplied.
+- Complete the existing workflow with explicit secure new-tab question videos,
+  post-pass optional explanation video/text and a unit Google Form at completion.
+  Derive gates from the existing session's passed/complete state; do not add
+  another answer checker or completion tracker. Preserve the supplied URLs/text.
+- Keep validators, schemas, manifest loader and session semantics unchanged.
+  Keep the public manifest empty and Demo Mode's original behavior with no
+  fabricated video/Form links. Reset stale link UI only on valid replacement;
+  cancelled/failed/stale loading preserves the previous attempt and Form.
+- Preserve all reviewed city/navigation/input/pause behavior. External links
+  require an explicit action, `_blank`, `noopener noreferrer`; no autoplay,
+  embedding, playback checks, tracking, backend or reload persistence.
+- Test native clicks and keyboard activation with fixture provider requests
+  intercepted before navigation. Do not contact dummy video/Form targets.
+  Record automated results separately from physical Windows acceptance.
+- Keep the reference checkout read-only. Open a new draft PR against main and
+  stop for instructor review. Do not merge, deploy or begin Phase 4.
+
+## Reviewed Phase 2 baseline and preservation rules
+
+- Phase 2 was approved after PR #2 (including `c2a93e6`) was reviewed and merged
   into main as `43f4b2660d11e56c091df89888df7b02e9726a70` on 2026-10-24.
   The instructor reports 7/7 Windows 11 acceptance checks for Phase 1/1.1;
   browser versions, GPU measurements and FPS were not supplied.
-- Work on `feature/phase-2-assignment-integration` from that verified main.
+- Phase 2 used `feature/phase-2-assignment-integration` from that verified main.
   Reuse the pinned reference's validation algorithms unchanged through a small
   native-module adapter. Add manifest-allowlisted loading, confirmation-based unit
   selection and an independent in-memory assignment session with minimal quiz UI.
@@ -23,7 +47,8 @@ take precedence over historical plans and rules from other projects.
   maps/teleports and safe modal pause. Four-question units deactivate Q05.
 - No video/Form presentation, teacher GUI changes, real coursework publication,
   backend, tracking or automatic sync in Phase 2. The reference repository stays
-  read-only. Open a new draft PR and stop for review; do not merge or begin Phase 3.
+  read-only. Its draft PR #3 review gate is complete, as recorded above; Phase 3
+  now has separate authorization.
 - The imported city baseline is `cca9c12a096951d63fee1d26904c04be0a128cef`.
   Phase 0 PR #1 is preserved at `974fddf`. Do not commit directly to `main`,
   merge, force-push, replace history/tags, deploy, or update upstream automatically.
