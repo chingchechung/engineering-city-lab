@@ -1,6 +1,7 @@
 # Engineering City Lab — phased plan
 
-Status: **Phase 0 prepared; awaiting instructor review. Phase 1 is not authorized.**
+Status: **Phase 0 reviewed and merged; Phase 1 synthetic question MVP implemented
+on 2026-10-24 and awaiting instructor review. Stop at a draft PR.**
 
 Prepared on 2026-10-23 (Asia/Taipei). This project adds Digital Electronics
 assignments to the imported Slop New York city. It does not rebuild the city or
@@ -10,7 +11,7 @@ continue the maze project's gameplay. `AGENTS.md` contains the binding constrain
 
 | Item | Record |
 | --- | --- |
-| Preserved `main` | `cca9c12a096951d63fee1d26904c04be0a128cef` — Import Slop New York |
+| Imported city baseline | `cca9c12a096951d63fee1d26904c04be0a128cef` — Import Slop New York |
 | Imported upstream | `mrdoob/slop-newyork` at `4b899b006120155514aee2e1558b4d14906c87e4` |
 | Preparation branch | `docs/phase-0-project-preparation`, branched from that `main` |
 | Rules | [AGENTS.md](AGENTS.md) |
@@ -33,16 +34,20 @@ Phase 0 work completed:
 - [x] Run baseline tests: **105 passed, 0 failed** after allowing subprocesses.
   Complete syntax checks and local HTTP resource smoke checks also passed.
 - [x] Keep imported runtime/data/tests unchanged; implement no educational feature.
-- [ ] Instructor reviews Phase 0 and explicitly authorizes Phase 1.
+- [x] Instructor reviews Phase 0 and explicitly authorizes Phase 1. PR #1 merged
+  as `974fddf2feecc96faf6856818f2eb452f83991df`. Feature branch:
+  `feature/phase-1-education-mvp`, based on that reviewed main.
 
 Review should cover the fixed-start policy, proposed terminal area, preservation
 boundary, four/five-question mapping, no-reset retry policy, reference contract
 and validation limits. Physical placements remain a Phase 1 verification task.
 
-## Phase 1 — fixed start and synthetic terminal integration
+## Phase 1 — minimal educational interaction MVP
 
-**Requires Phase 0 review and explicit authorization.** Use a new feature branch
-from the reviewed baseline. Keep rendering and Three.js imports unchanged.
+**Approved scope:** the instructor's 2026-10-24 request supersedes the earlier
+placeholder-only Phase 1 plan. Demonstrate approaching a fixed terminal, pressing
+X, answering a clearly labeled synthetic question, retrying and retaining passes.
+Keep rendering, physics, city systems and Three.js imports unchanged.
 
 1. Capture a Windows 11 Chrome/Edge comparison using the preserved baseline and
    the existing manual checklist. Use a clean browser origin for the default
@@ -55,20 +60,35 @@ from the reviewed baseline. Keep rendering and Three.js imports unchanged.
    traffic and chase/POV views. Freeze adjusted coordinates in configuration;
    use small nonblocking markers under an independent scene group. Do not alter
    the city geometry, road graph or collision data to make room.
-4. Add proximity selection from the active entity and a single nonrepeating X
-   action. Use synthetic labels only, with no real questions, JSON loader,
-   grading, course answers, video links or completion flow in this phase.
-5. Implement minimal accessible placeholder interaction and coordinated modal
+4. Add nearest-terminal interaction from active player world position, with
+   horizontal distance, height and obstruction checks: walking 3 m, car 18 m,
+   bicycle 8 m; car/bicycle speed <= 0.5 m/s. Disable helicopter interaction.
+   X ignores repeats, modifiers, typing and other dialogs. Preserve other keys.
+5. Implement an accessible question/options/submit/feedback/close dialog using
+   five clearly labeled demo questions. Store progress only in memory. A correct
+   answer passes only that question; an incorrect answer permits immediate retry
+   without changing passes or player position. Reopening preserves completion.
+   Show a demo completion message after all five, without an exit requirement.
+6. Implement coordinated modal
    input handling. Keep the city safe while interacting; avoid coasting or
    traffic pushing the player through a dialog. Resume without a time-step jump.
    Preserve map/search/teleport/camera/mode behavior outside the dialog.
-6. Add focused tests for fixed spawn despite saved state, five stable sites,
+7. Add focused tests for fixed spawn despite saved state, five stable sites,
    interaction range, altitude, repeated/modifier keys, typing/focus and dialog
-   input cleanup. Rerun all imported tests; manually compare city behavior.
+   input cleanup, answer/retry/completion and independent mode/teleport behavior.
+   First rerun the 105 imported tests; after implementation run all tests and
+   practical real-browser checks, distinguishing Linux automation from Windows
+   physical verification. Supply local HTTP test instructions and a draft PR.
 
-Exit evidence: five reachable fixed markers, repeatable fixed startup, X opens
-only the nearby marker, all original city functionality remains available, all
-baseline tests pass, and physical Windows checks are reported. **Stop for review.**
+Exit evidence: visible fixed terminals, repeatable fixed startup, nearest eligible
+X interaction, synthetic answer/retry/progress/completion, safe modal pause,
+unchanged city features, baseline/new tests and explicit browser limitations.
+No S01–S12 loading, v1/v2 port, teacher GUI, videos, Forms, timers or new rendering.
+**Open a draft PR and stop for review. Do not merge or begin Phase 2.**
+
+Implementation and review instructions: [docs/phase-1-results.md](docs/phase-1-results.md).
+The rendered survey moved Q02 from x = 12 to x = 11 to clear facade occlusion;
+all other proposed coordinates remain fixed. No city geometry was changed.
 
 ## Phase 2 — assignment contract and session adapter
 
@@ -100,8 +120,8 @@ regressions pass. **Stop for review.**
 
 Requires Phase 2 approval.
 
-- Replace synthetic placeholder UI with question/options/feedback driven by the
-  validated unit. Preserve supplied text and option order; use safe DOM APIs.
+- Connect the approved synthetic interaction UI to questions/options/feedback
+  from the validated unit. Preserve supplied text and option order; use safe DOM APIs.
 - Offer the question video and, after a correct answer, optional explanation
   video/text. Open external links only by explicit user action.
 - Show progress for the active four/five questions. Unlock the existing unit's

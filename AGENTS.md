@@ -6,15 +6,21 @@ take precedence over historical plans and rules from other projects.
 
 ## Current authorization
 
-- Phase 0 is preparation and documentation only. Do not implement terminals,
-  assignment loading, grading, progress, overlays, spawn changes, or new controls.
-- Stop after Phase 0 for instructor review. A plan for a later phase is not
-  authorization to implement it. Record subsequent explicit approvals in `Plan.md`.
-- Work on a separate development branch. The imported baseline on `main` is
-  `cca9c12a096951d63fee1d26904c04be0a128cef`. Do not commit directly to `main`,
+- Phase 0 PR #1 was reviewed and merged as `974fddf` on 2026-10-24. The instructor
+  authorizes Phase 1's minimal synthetic question MVP, extending the previous
+  placeholder-only scope: fixed car startup, five fixed terminals, ground-mode
+  X interaction, demo answers/feedback and in-memory progress without resets.
+- Preserve independent positions for other travel modes. Helicopter answering
+  is disabled. Pause simulation safely during dialogs and keep rendering.
+- No real S01–S12 loader, JSON integration, authoring changes, videos or Forms
+  in Phase 1. Do not modify `ece_hw_webproject`. Open a draft PR and stop for
+  instructor review; do not merge or begin Phase 2.
+- Work on a separate development branch. The reviewed main is `974fddf`; the
+  imported city baseline is `cca9c12a096951d63fee1d26904c04be0a128cef`. Do not commit directly to `main`,
   merge, force-push, replace history/tags, deploy, or update upstream automatically.
-- Phase 0 must leave every imported file byte-identical, including tests, HTML,
-  CSS, generated geography, tools, dependencies, and license notices.
+- Phase 0 left every imported file byte-identical. Phase 1 permits only necessary
+  educational wiring in main/HTML/CSS and the exact preload-test inventory update;
+  keep original city systems, physics, data, dependencies and notices unchanged.
 
 ## Product constraints for later approved work
 
