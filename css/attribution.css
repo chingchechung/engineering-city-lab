@@ -1,0 +1,14 @@
+/* Data attribution remains visible in the city, clean view and full map. */
+#data-attribution {
+  position: fixed;
+  z-index: 92;
+  left: 0;
+  bottom: 0;
+  max-width: 100vw;
+  padding: 2px 8px;
+  background: #181d24;
+  color: #e5e9ef;
+  font: 11px/1.3 system-ui, sans-serif;
+}
+#data-attribution a { color: inherit; text-decoration: underline; }
+#data-attribution a:focus-visible { outline: 2px solid #ffcf40; outline-offset: 1px; }

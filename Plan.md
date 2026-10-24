@@ -1,8 +1,8 @@
 # Engineering City Lab — phased plan
 
-Status: **Phase 2 PR #3 reviewed and merged as `1a362c9`; Phase 3 learning
-workflow implemented on 2026-10-24 and awaiting instructor review. Keep its
-new PR a draft; do not merge, deploy or begin Phase 4.**
+Status: **Phase 3 PR #4 reviewed and merged as `dba670b`; Phase 4 release
+candidate prepared on `feature/phase-4-release-preparation`. Draft PR #5 awaits
+instructor review. Do not merge, deploy, publish units or start another phase.**
 
 Prepared on 2026-10-23 (Asia/Taipei). This project adds Digital Electronics
 assignments to the imported Slop New York city. It does not rebuild the city or
@@ -205,11 +205,15 @@ Implementation and verification: [docs/phase-3-results.md](docs/phase-3-results.
 The final Node suite passed 189/189 (171 existing + 18 new), Python parity passed
 5/5, the focused native-DOM browser passed three groups and the full-city workflow
 passed 19 groups with six explicitly triggered, intercepted external tabs. The
-public manifest remains empty. Physical Windows Phase 3 review is pending.
+public manifest remains empty. PR #4 subsequently merged as
+`dba670bcbf483affad148ace04194089870e9e47`. The instructor reports **11/11
+Windows 11 Phase 3 checks passed**; versions/GPU/FPS were not supplied.
 
 ## Phase 4 — regression and deployment preparation
 
-Requires Phase 3 approval.
+Approved from verified latest main `dba670bcbf483affad148ace04194089870e9e47`.
+Before changes, all **189 baseline Node tests passed in 39.452 s**. Reported
+11/11 Windows acceptance is separate from automated/cloud release checks.
 
 - Run imported tests plus contract/session/browser integration tests. Add a
   documented CI job only within the approved tooling scope.
@@ -227,3 +231,8 @@ Requires Phase 3 approval.
 Exit evidence: a reviewable release candidate and reproducible instructions.
 Deployment, release publication and integration into `main` require explicit
 authorization. Preserve the imported baseline commit and all historical tags.
+
+Implementation/evidence: [Phase 4 results](docs/phase-4-results.md).
+Deployment and teacher publication remain manual, with no real units published.
+The release checklist separates locally verified results from hosted CI,
+physical Chrome/Edge, university Apache and actual media acceptance.

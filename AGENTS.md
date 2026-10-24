@@ -6,7 +6,33 @@ take precedence over historical plans and rules from other projects.
 
 ## Current authorization
 
-- Phase 3 is approved after PR #3 was merged into main as
+- Phase 4 release preparation is approved after PR #4 merged as latest main
+  `dba670bcbf483affad148ace04194089870e9e47`, verified through GitHub and fetch
+  on 2026-10-24. Use `feature/phase-4-release-preparation` from that baseline.
+  The instructor reports **11/11 Windows 11 Phase 3 acceptance checks passed**;
+  browser versions, hardware/GPU observations and FPS were not provided.
+- Freeze all accepted city and educational functionality. Run the 189 existing
+  Node tests before changes, then contract, native-DOM and full-city regressions.
+  Fix only demonstrated release defects with evidence and focused tests.
+- Add simple PR-only/read-only CI, reproducible static packaging, nested-path
+  verification and manual Apache/teacher publishing instructions. No deployment
+  permissions, secrets, automatic releases, publishing or application dependencies.
+- Release packages contain the local runtime graph, empty public manifest and
+  required notices only. Exclude fixtures, drafts, backups, tests, tools, caches,
+  credentials and outputs. Test the generated package over local HTTP.
+- A minimal visible geographic attribution and accompanying license/data notice
+  are authorized. Keep original city CSS, Three.js import map, fonts, shaders,
+  physics and geographic data unchanged. Dependency pinning needs separate review.
+- Preserve the complete Phase 3 workflow and in-memory progress. Document public
+  JSON/answer visibility and external dependencies. Mock fixture providers before
+  any native navigation; never treat synthetic URLs as real course content.
+- Update release evidence and exact file inventory. Open a new draft PR and stop
+  for instructor review. Do not merge, create a GitHub Release, deploy, publish real
+  units or begin another implementation phase. Keep the reference read-only.
+
+## Reviewed Phase 3 scope and preservation rules
+
+- Phase 3 was approved after PR #3 was merged into main as
   `1a362c95fb073b7652028ba47388185936d1cf02` on 2026-10-24. GitHub verified this
   was the latest main before creating `feature/phase-3-learning-workflow`.
   The instructor reports 9/9 Windows 11 Phase 2 acceptance checks passed;
@@ -25,8 +51,8 @@ take precedence over historical plans and rules from other projects.
 - Test native clicks and keyboard activation with fixture provider requests
   intercepted before navigation. Do not contact dummy video/Form targets.
   Record automated results separately from physical Windows acceptance.
-- Keep the reference checkout read-only. Open a new draft PR against main and
-  stop for instructor review. Do not merge, deploy or begin Phase 4.
+- The Phase 3 review gate is complete through PR #4; Phase 4 authorization above
+  supersedes its historical stop gate. Keep the reference checkout read-only.
 
 ## Reviewed Phase 2 baseline and preservation rules
 
