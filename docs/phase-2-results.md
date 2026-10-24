@@ -5,6 +5,12 @@ Prepared 2026-10-24 (Asia/Taipei). Implementation branch:
 **43f4b2660d11e56c091df89888df7b02e9726a70**. GitHub confirmed PR #2 was merged,
 including `c2a93e6`, before this branch or implementation was created.
 
+Subsequent review: PR #3 was merged as
+`1a362c95fb073b7652028ba47388185936d1cf02` on 2026-10-24 (Asia/Taipei).
+The instructor reports **9/9 Windows 11 Phase 2 acceptance checks passed**.
+This is instructor-reported evidence; no browser versions, GPU measurements or
+FPS were supplied. The historical automated results below remain separate.
+
 The instructor reports **7/7 Windows 11 manual acceptance checks passed** for
 Phase 1/1.1. This is instructor-reported evidence, separate from Linux cloud
 automation. Browser versions, GPU measurements and FPS were not supplied.
@@ -99,8 +105,8 @@ screenshots were inspected. Artifacts are local to
 `start.png`, `question.png`, `Q01.png`–`Q05.png`, `assignment-selector.png`,
 `assignment-question.png` and `assignment-four-complete.png`.
 
-Physical Windows Phase 2 validation remains for the instructor; Phase 1's 7/7
-result does not establish Phase 2 acceptance. Real touch/gamepad hardware,
+At implementation time, physical Windows Phase 2 validation was pending; the
+subsequent 9/9 instructor report is recorded above. Real touch/gamepad hardware,
 hardware GPU performance and other platforms were not verified by this run.
 
 Commands from repository root:
@@ -214,4 +220,5 @@ the production additions are four small adapter/loader/session/selector modules.
     `assignments/manifest.json` must still be empty. Record physical results and
     repeat relevant original city regression checks before approving this draft.
 
-Stop for instructor review. Do not merge the Phase 2 PR or begin Phase 3.
+That Phase 2 review is complete as recorded above. Phase 3 has separate approval;
+this historical report does not authorize merging or deploying later work.

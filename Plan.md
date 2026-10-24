@@ -1,8 +1,8 @@
 # Engineering City Lab — phased plan
 
-Status: **Phase 1/1.1 PR #2 reviewed and merged as `43f4b26`; Phase 2 assignment
-integration implemented on 2026-10-24 and awaiting instructor review. Keep its
-new PR a draft; do not merge or begin Phase 3.**
+Status: **Phase 2 PR #3 reviewed and merged as `1a362c9`; Phase 3 learning
+workflow implemented on 2026-10-24 and awaiting instructor review. Keep its
+new PR a draft; do not merge, deploy or begin Phase 4.**
 
 Prepared on 2026-10-23 (Asia/Taipei). This project adds Digital Electronics
 assignments to the imported Slop New York city. It does not rebuild the city or
@@ -167,16 +167,22 @@ Implementation and verification: [docs/phase-2-results.md](docs/phase-2-results.
 The final Node suite passed 171/171 (137 existing + 34 new); five Python tests
 checked 364 shared validation cases and 76 answer selections. The real-city
 Chromium run passed 12 check groups beneath a nested hosting path. The public
-manifest remains empty, and physical Windows Phase 2 acceptance is pending.
+manifest remains empty. The instructor subsequently reports 9/9 Windows 11
+Phase 2 acceptance checks passed; see the Phase 3 entry below.
 
 ## Phase 3 — complete educational interaction
 
-Requires Phase 2 approval.
+Approved after GitHub verified PR #3 merged and latest main was
+`1a362c95fb073b7652028ba47388185936d1cf02`. Branch:
+`feature/phase-3-learning-workflow`. The instructor reports **9/9 Windows 11
+Phase 2 checks passed**, without supplied browser versions, GPU data or FPS.
+Before code changes, all **171 baseline tests passed** in **57.977 s**.
 
 - Extend Phase 2's minimal validated-unit dialog into the final learner workflow.
   Preserve supplied question/options/feedback text and option order; use safe DOM APIs.
 - Offer the question video and, after a correct answer, optional explanation
-  video/text. Open external links only by explicit user action.
+  video/text. Open exact validated URLs only by explicit user action in secure
+  separate tabs; no embedding, autoplay, viewing checks or invented content.
 - Show progress for the active four/five questions. Unlock the existing unit's
   Google Form once all required IDs pass, wherever the player is. Require no
   exit, maze, countdown or map restriction.
@@ -185,9 +191,21 @@ Requires Phase 2 approval.
 - Verify dialog accessibility, keyboard cleanup, touch/gamepad coordination,
   safe external links and cancellation. Use synthetic fixtures until the
   instructor explicitly publishes real assignment files.
+- Preserve Demo Mode with no external resources and the empty public manifest.
+  Clear old URLs on valid replacement; keep the old completed Form available
+  after a failed/cancelled/stale switch. Keep completion accessible in the HUD,
+  including while using the full map.
+- Reuse the exact Phase 2 validator, loader, session and answer acceptance.
+  Test actual clicks/keyboard actions with all dummy provider URLs mocked.
 
 Exit evidence: complete v1/v2 learner flows and retry/switching checks pass,
 with physical Windows review of the unchanged city. **Stop for review.**
+
+Implementation and verification: [docs/phase-3-results.md](docs/phase-3-results.md).
+The final Node suite passed 189/189 (171 existing + 18 new), Python parity passed
+5/5, the focused native-DOM browser passed three groups and the full-city workflow
+passed 19 groups with six explicitly triggered, intercepted external tabs. The
+public manifest remains empty. Physical Windows Phase 3 review is pending.
 
 ## Phase 4 — regression and deployment preparation
 

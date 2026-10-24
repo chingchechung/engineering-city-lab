@@ -95,8 +95,8 @@ Q05/D authoring metadata or example URLs as public content. No upload/sync servi
 backend, authentication, grades or telemetry is needed. Before copying code,
 record its reuse permission and applicable notices as described in `upstream.md`.
 
-Future student UI should use safe text rendering, open the question video on
-request, offer the optional explanation after a correct answer, and expose the
+Phase 3 student UI uses safe text rendering, opens the question video on
+request, offers the optional explanation after a correct answer, and exposes the
 Form only after all required questions pass. Google Forms owns submission
 availability. Client-side JSON answers are visible by design and are not a
 secure examination/grade-submission system.

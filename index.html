@@ -333,6 +333,7 @@
     <p id="education-progress" role="status"></p>
     <p id="education-prompt" hidden></p>
     <p id="education-completion" role="status" hidden>Demo complete! All five questions passed. Continue exploring the city.</p>
+    <a id="education-unit-form" class="education-external-link education-form-link" target="_blank" rel="noopener noreferrer" hidden>Open Google Form</a>
     <p id="education-navigation-status" role="status" hidden></p>
     <button id="btn-assignments" class="education-selector-button" type="button">Assignments</button>
   </aside>
@@ -340,12 +341,21 @@
     <p id="education-demo-note">Synthetic interaction demo · not actual coursework</p>
     <h2 id="education-title"></h2>
     <p id="education-question"></p>
+    <a id="education-question-video" class="education-external-link" target="_blank" rel="noopener noreferrer" hidden>Watch Question Video</a>
     <form id="education-answer">
       <fieldset>
         <legend>Choose one answer</legend>
         <div id="education-options"></div>
       </fieldset>
       <p id="education-feedback" role="status" aria-live="polite"></p>
+      <section id="education-explanation" aria-labelledby="education-explanation-title" hidden>
+        <h3 id="education-explanation-title">Optional explanation</h3>
+        <a id="education-explanation-video" class="education-external-link" target="_blank" rel="noopener noreferrer" hidden>Watch English Explanation</a>
+        <section id="education-explanation-text-section" aria-label="Explanation text" hidden>
+          <p id="education-explanation-text"></p>
+        </section>
+      </section>
+      <a id="education-dialog-form" class="education-external-link education-form-link" target="_blank" rel="noopener noreferrer" hidden>Open Google Form</a>
       <div class="education-actions">
         <button type="submit">Submit Answer</button>
         <button id="education-close" type="button">Close</button>

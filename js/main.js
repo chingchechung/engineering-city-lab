@@ -561,6 +561,7 @@ async function initApp() {
   const educationUI = createEducationUI({
     session: demoSession,
     available: () => loadingOverlay.classList.contains('hidden') && !document.hidden && !mapSystem.isFullMapOpen,
+    progressAvailable: () => loadingOverlay.classList.contains('hidden') && !document.hidden,
     getNearby: () => {
       const entity = controllerManager.getActiveEntity();
       const terminal = nearestTerminal(entity, controllerManager.activeMode,
