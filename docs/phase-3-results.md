@@ -7,7 +7,11 @@ PR #3 was merged at that commit before this branch or implementation was created
 The instructor reports **9/9 Windows 11 Phase 2 acceptance checks passed**.
 This is instructor-reported evidence, separate from cloud automation; browser
 versions, GPU measurements and FPS were not supplied. Phase 3 physical acceptance
-remains a separate review gate.
+was subsequently completed: the instructor reports **11/11 Windows 11 Phase 3
+acceptance checks passed**. PR #4 merged into main as
+`dba670bcbf483affad148ace04194089870e9e47`, independently verified before Phase 4.
+No browser versions, GPU observations or FPS were supplied. This later report
+does not change the automated evidence or limits recorded below.
 
 ## Implemented workflow
 

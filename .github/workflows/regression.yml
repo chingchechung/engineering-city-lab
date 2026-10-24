@@ -1,0 +1,31 @@
+name: Regression
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install jsonschema==4.26.0
+      - name: Node regressions
+        run: node --test --test-reporter=tap tests/*.test.cjs tests/*.test.mjs
+      - name: Versioned contract and validation parity
+        run: python -m unittest tests.test_assignment_contract -v
+      - name: JavaScript and Python syntax
+        run: python tools/check_release.py --syntax
+      - name: Schemas and static manifest integrity
+        run: python tools/check_release.py
+      - name: Release packaging and nested HTTP regressions
+        run: python -m unittest tests.test_release -v

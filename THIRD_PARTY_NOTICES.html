@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Engineering City Lab — licenses and data</title></head>
+<body>
+<h1>Engineering City Lab — licenses and data</h1>
+<p><a href="./index.html">Return to the city</a>. Distribution notices recorded 2026-10-24 (Asia/Taipei).</p>
+<h2>Slop New York and Three.js</h2>
+<p>Based on <a href="https://github.com/mrdoob/slop-newyork/tree/4b899b006120155514aee2e1558b4d14906c87e4">Mr.doob's Slop New York, commit 4b899b0</a>. Copyright (c) 2026 Mr.doob. The complete city source MIT notice is in the accompanying <a href="./LICENSE">LICENSE</a>.</p>
+<p>The renderer loads Three.js from an external CDN. Ported LoftGeometry and CarGenerator code in js/actor-models.js also retains its source comments. The following Three.js license is retained for that code (source: <a href="https://github.com/mrdoob/three.js/blob/dev/LICENSE">Three.js LICENSE</a>, retrieved 2026-10-24). No offline Three.js bundle is included.</p>
+<pre>The MIT License
+
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+</pre>
+<h2>Geographic database and OpenStreetMap</h2>
+<p>Contains information from © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, available under the <a href="https://opendatacommons.org/licenses/odbl/1-0/">Open Database License (ODbL) 1.0</a>. The OSM-derived geographic database is distributed under ODbL 1.0; the source-code MIT license does not replace those terms. Preserve attribution and share-alike/access obligations when redistributing or adapting it.</p>
+<p>A free machine-readable copy of the entire geographic database used by this city is <a href="./js/nyc-geodata.js">js/nyc-geodata.js</a> (the exported GEO object, with original source header). Its database version is 1, in metres around Fifth Avenue and 42nd Street. The <a href="https://github.com/chingchechung/engineering-city-lab/tree/dba670bcbf483affad148ace04194089870e9e47/tools">exact original inputs and transformation scripts</a> are also available: polygon simplification, projection to the city frame, clipping and derived street/park geometry. No geographic data was changed for the educational integration.</p>
+<h2>NYC Open Data</h2>
+<p>Sources: NYC DCP Borough Boundaries (<a href="https://data.cityofnewyork.us/d/gthc-hcne">gthc-hcne</a>), NYC Street Centerline / CSCL (<a href="https://data.cityofnewyork.us/d/inkn-q76z">inkn-q76z</a>) and NYC Parks Properties (<a href="https://data.cityofnewyork.us/d/enfh-gkve">enfh-gkve</a>). The imported snapshot and transformations are identified above; live datasets may differ. This is a simulation using modified data from NYC.gov, not an official City service or a navigation aid. The City supplies data without warranties; no endorsement is implied. NYC content retains its applicable rights and <a href="https://data.cityofnewyork.us/stories/s/Terms-of-Use/k9k7-3cje">NYC Open Data terms</a>, including any dataset-specific terms.</p>
+<h2>Fonts</h2>
+<p>Inter and Overpass load externally through Google Fonts; font files are not redistributed here. Inter is by the Inter Project Authors and uses the SIL Open Font License; Overpass credits the Overpass project (Red Hat and contributors) and uses the SIL Open Font License. See <a href="https://github.com/google/fonts/blob/main/ofl/inter/OFL.txt">Inter OFL</a> and <a href="https://github.com/google/fonts/blob/main/ofl/overpass/OFL.txt">Overpass OFL</a>. Keep those notices if fonts are ever vendored. System fallbacks are used if font access fails.</p>
+<h2>Assignment components</h2>
+<p>Reuses the validated assignment rules, validator and contract from <a href="https://github.com/chingchechung/ece_hw_webproject/tree/70cc35d9ce828bcd5357f16fe85f303aa2d30cd9">Engineering Maze Lab, revision 70cc35d</a>, with the instructor's explicit Phase 2 reuse authorization on 2026-10-24. No root application LICENSE was supplied by that reference revision; no blanket MIT relicensing is asserted. Existing component headers are retained. Only the native adapter/loader/session and city integration were adapted; no maze engine, teacher drafts, GUI, tests or third-party bundle is distributed in this package. Public assignments are empty by default.</p>
+</body>
+</html>

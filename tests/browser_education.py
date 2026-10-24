@@ -21,7 +21,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def run(output, assignments=False, base_path='', workflow=False):
+def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT):
     output.mkdir(parents=True, exist_ok=True)
     cache = output / 'cdn-cache'
     cache.mkdir(exist_ok=True)
@@ -35,7 +35,7 @@ def run(output, assignments=False, base_path='', workflow=False):
                 path = '/' + path[len(base_path) + 1:]
             return super().translate_path(path)
 
-    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(ROOT)))
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(site_root)))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -75,7 +75,7 @@ def run(output, assignments=False, base_path='', workflow=False):
                 page.route('https://fonts.gstatic.com/**', lambda r: r.abort())
 
             def observe_main(route):
-                source = (ROOT / 'js/main.js').read_text()
+                source = (site_root / 'js/main.js').read_text()
                 needle = '  let warmedUp = false;'
                 assert source.count(needle) == 1
                 observe = """  window.__city = {controllerManager, cameraSystem, mapSystem,
@@ -309,6 +309,7 @@ if __name__ == '__main__':
     parser.add_argument('--assignments', action='store_true', help='Also exercise the Phase 2 selector and test-only routed units')
     parser.add_argument('--base-path', default='', help='Optional nested deployment prefix, e.g. course/city/')
     parser.add_argument('--workflow', action='store_true', help='Also test Phase 3 native video/explanation/Form actions with intercepted external tabs')
+    parser.add_argument('--site-root', type=Path, default=ROOT, help='Serve a generated static package instead of the repository; fixtures stay test-only routes')
     args = parser.parse_args()
     prefix = args.base_path.strip('/')
-    run(args.output, args.assignments or args.workflow, prefix + '/' if prefix else '', args.workflow)
+    run(args.output, args.assignments or args.workflow, prefix + '/' if prefix else '', args.workflow, args.site_root.resolve())
