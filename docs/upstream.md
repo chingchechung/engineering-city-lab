@@ -33,7 +33,19 @@ git diff --name-status 4b899b006120155514aee2e1558b4d14906c87e4 cca9c12a096951d6
 There is no imported release/version manifest. The commit is the city version;
 do not describe a later upstream HEAD or a Three.js release number as this import.
 
-## Dependency state to preserve
+## Current dependency distribution (v1.0.1 review)
+
+As of 2026-11-06, Draft PR #6 fixes all four aliases to the local
+`vendor/three/0.187.0/` installation. Its 17 runtime modules and MIT license are
+unchanged files from the official `three@0.187.0` npm tarball, checked against
+the registry SHA-512 integrity and a recorded SHA-256. The accompanying manifest
+records all paths, sizes and file hashes. See [the combined hotfix/vendor report](threejs-startup-hotfix.md)
+for provenance, verification and deliberate upgrade procedure. No rendering,
+city or geographic data update is included. The following dependency description
+and the Phase 4 recommendation are historical records of v1.0.0, not the current
+candidate's deployment architecture.
+
+## Historical v1.0.0 dependency state
 
 This is a static native-ES-module application, with no `package.json`, lockfile,
 bundler, vendored Three.js build or install step. The import map in `index.html`

@@ -6,14 +6,13 @@ Software Vulkan is only a test launch setting; production renderer/imports stay 
 Test-only main-module instrumentation observes the real city, without a shipped debug API.
 """
 import argparse
-import hashlib
 import http.server
 import json
 import os
 from pathlib import Path
 import shutil
 import threading
-import urllib.request
+from urllib.parse import urlsplit
 from functools import partial
 
 from playwright.sync_api import sync_playwright
@@ -23,9 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT):
     output.mkdir(parents=True, exist_ok=True)
-    cache = output / 'cdn-cache'
-    cache.mkdir(exist_ok=True)
-    errors, messages, checks, routes, cdn_resources = [], [], [], [], []
+    errors, messages, checks, routes = [], [], [], []
+    scripts, external_scripts, failed_scripts = [], [], []
 
     class QuietHandler(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *_args):
@@ -57,24 +55,18 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
             page.on('console', lambda m: messages.append({'type': m.type, 'text': m.text})
                     if m.type in ('warning', 'error') or m.text.startswith('[init]') else None)
 
-            # In Cloud, Chromium does not inherit Python's proxy CA trust. Fetch the exact
-            # original CDN URLs through urllib with normal TLS verification, then fulfill
-            # them unchanged. Never disable TLS verification or replace dependency versions.
-            if os.environ.get('HTTPS_PROXY'):
-                def cdn(route):
-                    url = route.request.url
-                    saved = cache / hashlib.sha256(url.encode()).hexdigest()
-                    if not saved.exists():
-                        with urllib.request.urlopen(url, timeout=60) as response:
-                            saved.write_bytes(response.read())
-                    data = saved.read_bytes()
-                    cdn_resources.append({'url': url, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
-                    route.fulfill(body=data, content_type='application/javascript',
-                                  headers={'access-control-allow-origin': '*'})
-                page.route('https://cdn.jsdelivr.net/**', cdn)
-                # External font hosts are outside this environment's allowed destinations.
-                page.route('https://fonts.googleapis.com/**', lambda r: r.abort())
-                page.route('https://fonts.gstatic.com/**', lambda r: r.abort())
+            # Mandatory local-dependency test: no CDN fulfillment, cache or proxy.
+            # Provider helpers register their synthetic document routes separately.
+            context.route('https://**', lambda route: route.abort())
+            page.on('request', lambda request: external_scripts.append(request.url)
+                    if request.resource_type == 'script' and urlsplit(request.url).hostname != '127.0.0.1' else None)
+            page.on('requestfailed', lambda request: failed_scripts.append(request.url)
+                    if request.resource_type == 'script' else None)
+            def script_response(response):
+                if response.request.resource_type == 'script':
+                    scripts.append({'url': response.url, 'status': response.status,
+                                    'mime': response.headers.get('content-type', '').split(';')[0]})
+            page.on('response', script_response)
 
             def observe_main(route):
                 source = (site_root / 'js/main.js').read_text()
@@ -144,6 +136,14 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                 assert starts['car'] == {'x': 3.6, 'y': 0, 'z': 410.6, 'heading': 0}, starts
                 assert starts['person']['x'] == -11.6 and starts['cyclist']['x'] == 5.2 and starts['helicopter']['y'] == 96
                 checks.append('fixed startup ignores stale positions for all four independent modes')
+                assert not external_scripts and not failed_scripts, (external_scripts, failed_scripts)
+                assert all(r['status'] == 200 and r['mime'] in ('text/javascript', 'application/javascript') for r in scripts), scripts
+                vendor_prefix = '/' + base_path + 'vendor/three/0.187.0/'
+                actual_vendor = {urlsplit(r['url']).path.removeprefix(vendor_prefix) for r in scripts if vendor_prefix in urlsplit(r['url']).path}
+                manifest = json.loads((site_root / 'vendor/three/0.187.0/manifest.json').read_text())
+                assert actual_vendor == {e['path'] for e in manifest['files'] if e['path'].endswith('.js')}, actual_vendor
+                assert page.evaluate('__city.threeRevision') == '187'
+                checks.append('all 17 Three.js modules load locally with correct MIME/status while every external host is blocked')
                 print('Browser: city rendered; checking interactions', flush=True)
                 page.screenshot(path=str(output / 'start.png'), timeout=180000)
 
@@ -292,6 +292,13 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                   return c.mapSystem.waypoint.x===p.x && c.mapSystem.waypoint.z===p.z;}''')
                 assert page.evaluate('__city.demoSession.count') == 5
                 checks.append('normal walking reaches all five sites under 250 m; completion, map/preset teleports and driving preserve progress')
+                page.keyboard.press('m')
+                page.locator('#fullmap-search').fill('Broadway')
+                assert page.evaluate('__city.mapSystem.searchHighlight') == 'broadway'
+                assert page.evaluate('Boolean(__city.mapSystem.searchPath)')
+                page.locator('#fullmap-search').fill('')
+                page.locator('#close-fullmap-btn').click()
+                checks.append('native full-map Broadway search highlights the existing street geometry')
                 if assignments:
                     from browser_assignments import check_assignments
                     check_assignments(page, output, checks, base_path, workflow=workflow)
@@ -332,11 +339,12 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                 assert page.evaluate('__city.demoSession.count') == progress
                 checks.append('all four lighting presets render with clustered lighting, shadows, SSR and post-processing; progress preserved')
                 assert not errors, errors
+                assert not external_scripts and not failed_scripts, (external_scripts, failed_scripts)
                 assert not page.evaluate('window.__gpuLost'), 'WebGPU device was lost during the check'
                 print(json.dumps({'checks': checks, 'starts': starts, 'sites': sites, 'routes':routes, 'browser': browser.version}, indent=2), flush=True)
             finally:
                 (output / 'results.json').write_text(json.dumps({'checks': checks, 'routes':routes, 'page_errors': errors, 'console': messages}, indent=2))
-                (output / 'cdn-resources.json').write_text(json.dumps(cdn_resources, indent=2))
+                (output / 'network.json').write_text(json.dumps({'scripts': scripts, 'external_scripts': external_scripts, 'failed_scripts': failed_scripts}, indent=2))
                 browser.close()
     finally:
         server.shutdown()

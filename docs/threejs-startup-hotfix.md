@@ -1,219 +1,277 @@
-# Three.js WebGPU startup hotfix
+# Three.js startup repair and self-hosted r187 — v1.0.1 review
 
-Prepared 2026-11-06 (Asia/Taipei) for instructor review on
-`fix/pin-threejs-r187`. This request separately authorizes dependency pinning;
-the Phase 4 dependency freeze in older documents is historical.
+Updated 2026-11-06 (Asia/Taipei), Draft PR #6, branch `fix/pin-threejs-r187`.
+**Status: automated implementation/review candidate; physical Windows acceptance,
+merge and release are separate gates. Nothing has been deployed to Apache.**
 
-## Baseline and diagnosis
+## Confirmed incident and final architecture
 
-Before editing, GitHub fetch/API checks confirmed `main` and the `v1.0.0` tag
-both resolve to `38b1dfdd73d766ec1d01999216b24dfca2126fad`, there were no open
-PRs, and the current release was published, neither draft nor prerelease.
-Read `AGENTS.md`, `Plan.md`, `docs/upstream.md`, `docs/architecture.md` and
-`docs/phase-4-results.md`. The tag/release remain unchanged.
+The original unchanged v1.0.0 at `38b1dfdd73d766ec1d01999216b24dfca2126fad`
+was reproduced in Chromium with:
 
-Confirmed evidence:
+`The requested module './three.tsl.js' does not provide an export named 'StorageStructNode'`.
 
-- Chromium 154.0.8037.57 reproduced the original unmodified page's error:
-  `The requested module './three.tsl.js' does not provide an export named 'StorageStructNode'`.
-  The original loading text remained visible and the viewport contained zero
-  canvases. This is an ES-module graph linking failure, before `main.js` can
-  evaluate or call `initApp()`; a catch inside `initApp()` cannot handle it.
-- The old import map used four floating `mrdoob/three.js@dev` URLs. Separate
-  verified-TLS fetches of the same URLs returned different bytes during this
-  investigation. The graph fetched for the failed browser run was incompatible.
-  Its WebGPU build references `StorageStructNode`, while its TSL build contains
-  no such symbol. The fixed r187 builds consistently do not require that symbol;
-  no export shim or renderer modification is needed.
-- Current upstream Slop New York's `main/index.html` uses the proposed npm
-  `three@0.187.0` URLs for all four entries. Its HTML was read only; no later
-  upstream city code was copied. The npm package metadata identifies `0.187.0`.
-- The fixed WebGPU, TSL, core, ClusteredLighting and SSRNode resources returned
-  HTTP 200 and the expected JavaScript MIME type. Browser execution, rather than
-  mere HTTP success or a version comment, determines compatibility below.
+The fetched WebGPU build referenced that symbol but the fetched TSL build did
+not contain it. The original loading text remained and no renderer canvas was
+created: the graph could not link, before `main.js` could evaluate or call
+`initApp()`. Separate fetches of the floating `@dev` URLs returned different
+bytes. The precise upstream/CDN cache history remains unverified. No original
+working Three.js commit SHA was recorded in v1.0.0.
 
-The exact CDN cache/edge history and upstream change responsible for the original
-mix are **not independently established**. The evidence supports an incompatible
-floating module graph, not a claim that a particular cache or upstream commit
-caused the incident. No immutable Three.js SHA was recorded for the instructor's
-earlier successful v1.0.0 run, so that last working SHA cannot be inferred.
+The first PR #6 commit (`f638558`) pinned all aliases to npm r187 on a CDN and
+proved compatibility. That CDN map is now an intermediate historical step.
+**The final candidate serves all Three.js code locally**, including its entire
+recursive addon graph, from `vendor/three/0.187.0/`. Both `three` aliases resolve
+to one WebGPU module URL, TSL/core share that installation, and addon relative
+imports retain their original directory relationships. The obsolete jsDelivr
+preconnect is removed. The static website needs no Node/npm or build framework
+on Apache. Fonts have system fallbacks; YouTube/Forms remain external services,
+so this is not a claim of a complete offline course product.
 
-Failed browser-run build responses (all under
-`https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/`):
+The existing small inline startup observer is retained unchanged. While the
+loading overlay is active it handles script/graph errors and unhandled init
+rejections, stops the indeterminate bar and gives a readable dependency/WebGPU
+message. It does not suppress console errors or reopen the overlay after startup.
+The missing-local-TSL test now exercises the actual application graph and a 404,
+not just a synthetic module failure. No timeout/retry/device-loss redesign is added.
 
-| File | Bytes | SHA-256 |
-| --- | ---: | --- |
-| `three.webgpu.js` | 1,345,062 | `6759286fc12010990196430d9e4cad68f56d67471e0d5f6a037824d17eddff78` |
-| `three.tsl.js` | 1,065,544 | `d8f3cdb8b85b799a5631bd9a8d77e185d88ce1eb1bb051f48b332728a5423e3f` |
-| `three.core.js` | 1,476,687 | `619f78b100291b82819c0fac5bc07282d0f4f263afcf8c80b05692c84625d49a` |
+## Official distribution and exact vendor inventory
 
-Fixed responses used by the successful startup test (relative to
-`https://cdn.jsdelivr.net/npm/three@0.187.0/`):
+- Package: **three@0.187.0**, official metadata:
+  <https://registry.npmjs.org/three/0.187.0>.
+- Original tarball: <https://registry.npmjs.org/three/-/three-0.187.0.tgz>.
+- Tarball size: **4,795,351 bytes**.
+- SHA-512 npm integrity:
+  `sha512-Qiu7R+Cmh8CstZsY1uJOSWnVlfo7ZtNLV7mF8Jltk3LB3AtDu9cRZlcnRKkAk8Y4z6KKw35z7Y7Urd7jWY8etA==`.
+- Tarball SHA-256:
+  `ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728`.
+- Verified normal TLS download, registry integrity and SHA-256 before reading
+  tar members. No npm lifecycle/install scripts or tar filesystem extraction.
+- [manifest.json](../vendor/three/0.187.0/manifest.json) is the exact path/size/
+  SHA-256 inventory and provenance for **18 unchanged upstream files**: 17 JS
+  modules plus the official [MIT LICENSE](../vendor/three/0.187.0/LICENSE).
+  The manifest itself is the nineteenth distributed vendor file.
+- All 18 upstream files were compared directly with official tar members.
+  Re-running the vendor tool into an isolated checkout reproduced all 19 files
+  byte-for-byte. No minification, patches, reformatting or substitutions.
+  `.gitattributes` disables vendor text/EOL conversion on Windows; generated
+  provenance always uses LF so its checksums remain reproducible there too.
+  A Git checkout with `core.autocrlf=true` was verified to retain all 19 vendor
+  files byte-for-byte. Original upstream whitespace is retained as well;
+  owned-source whitespace checks exclude the immutable third-party files.
 
-| File | Bytes | SHA-256 |
-| --- | ---: | --- |
-| `build/three.webgpu.js` | 1,350,894 | `eafead3154ec06093f3108bddceab360f048a6fcebd7c085d5aae0ab5404bd25` |
-| `build/three.tsl.js` | 1,065,544 | `d8f3cdb8b85b799a5631bd9a8d77e185d88ce1eb1bb051f48b332728a5423e3f` |
-| `build/three.core.js` | 1,474,799 | `613e370f76638fdef83926642bf256dc9615684922de1ce1f63a8583e5d78578` |
-| `examples/jsm/lighting/ClusteredLighting.js` | 4,240 | `28d00d4a745a8927d7e0f0d8664d94d23d98ffea120ff54183b40973be45bf17` |
-| `examples/jsm/tsl/display/SSRNode.js` | 46,020 | `3f59131d1682a9f0738e7e84060d526286c43566df141239d11401e87a8d2480` |
+The 17 modules are:
 
-## Implementation and exact changed files
+```text
+build/three.core.js
+build/three.tsl.js
+build/three.webgpu.js
+examples/jsm/lighting/ClusteredLighting.js
+examples/jsm/lights/SunLight.js
+examples/jsm/lights/SunLightNode.js
+examples/jsm/lights/SunLightShadow.js
+examples/jsm/lights/SunShadowNode.js
+examples/jsm/objects/SkyMesh.js
+examples/jsm/tsl/display/BloomNode.js
+examples/jsm/tsl/display/ImportanceSampledEnvironment.js
+examples/jsm/tsl/display/SSRNode.js
+examples/jsm/tsl/display/boxBlur.js
+examples/jsm/tsl/lighting/ClusteredLightsNode.js
+examples/jsm/tsl/utils/RNoise.js
+examples/jsm/tsl/utils/SpecularHelpers.js
+examples/jsm/utils/BufferGeometryUtils.js
+```
 
-| File | Change |
-| --- | --- |
-| `index.html` | Fix all four aliases/addon prefix to npm `three@0.187.0`, preserving one canonical WebGPU module instance. Add an isolated inline startup error observer before the entry; the existing native entry and 40 preloads stay intact. |
-| `tests/boot.test.cjs` | Reject floating/mixed/unreviewed Three.js versions and duplicate alias URLs; retain canonical preload checks and account for the startup observer. |
-| `tests/browser_startup.py` | Native-browser module-link/download/init-rejection checks, mobile failure-message bounds and no reactivation after successful startup. |
-| `tests/browser_education.py` | Preserve existing full-city workflow; additionally check the WebGPU backend, cyclist propulsion/helicopter ascent, all 11 cameras and four light presets; record exact resolved CDN URLs/bytes/hashes. Test instrumentation remains outside the distributed runtime. |
-| `docs/threejs-startup-hotfix.md` | This diagnosis, results, review checklist and deployment/rollback plan. |
+The closure is found from the app's Three.js imports through upstream static
+imports/reexports and literal dynamic imports. This r187 closure has no dynamic
+imports or literal additional file assets. The tooling rejects unsupported/
+computed dynamic imports, unmapped/external JS, missing inputs, inconsistent
+maps, unsafe paths, source symlinks, provenance changes and checksum mismatches.
+The manifest JS inventory must equal the graph, rather than silently packaging
+unrelated examples. Vendor `../` relationships are permitted only after path
+normalization stays inside this exact version directory; the existing first-party
+no-traversal rule remains. The scanner targets the native syntax of this reviewed
+snapshot, not arbitrary future JS: syntax/asset changes require review and the
+independent real-browser graph check.
 
-No production JavaScript, city geometry, shaders, simulation, physics, audio,
-education logic, JSON validator/schema, assignment file, teacher GUI or unrelated
-dependency changed. Only `index.html` changes in the 47-file runtime package.
-The public manifest remains empty. There is no backend or offline bundle.
-The final package has 2,605,152 content bytes; its other 46 files match
-`v1.0.0` byte-for-byte.
+## Package, ZIP and integrity
 
-The startup observer handles global script/linking errors, failed module script
-loads, and unhandled initialization rejections while the existing overlay is
-visible. It stops the indeterminate animation and gives a bounded, readable
-dependency/WebGPU failure message. Native console errors remain available;
-events are not suppressed. Font/image failures are not treated as module failures.
-After startup hides the overlay, errors do not reopen it. This is not a timeout,
-retry system, device-loss recovery system or broad loading redesign. A request
-that never settles can still require browser/network diagnosis.
+The distribution is **66 files / 6,706,319 uncompressed content bytes**: the
+original 47-file runtime shape plus 19 vendor files. Existing city/education JS,
+CSS, geometry, schemas, assignment rules and source course data remain unchanged.
+The public manifest is empty; real assignments, teacher files, tests, tools,
+schemas, Git, caches and unrelated vendor examples are excluded. Full notices,
+original headers and the MIT/OSM/NYC obligations are retained.
 
-## Automated verification
+The tool follows the graph and verifies vendor checksums before creating output.
+`--zip` additionally creates sorted members with fixed timestamps/permissions and
+writes `SHA256SUMS.txt` from the completed archive. Two builds were compared
+byte-for-byte and every ZIP member was checked against source. Compressor version
+changes may change compressed bytes; final release metadata must always come
+from the actual final ZIP, not an older candidate's hash.
 
-Before changes: **189/189 Node**, **11/11 Python**, 364 validation cases and
-76 answer selections, syntax (66 JS / 15 Python), and 47-file package integrity
-passed. The initial restricted-shell attempts could not run subprocess/network
-tests fully; the complete suites were rerun with the necessary execution access.
+Current **review artifact**, not a published release:
 
-After changes: **190/190 Node**, **11/11 Python**, unchanged contract parity,
-syntax (66 JS / 16 Python), empty manifest and 47-file package integrity passed.
+- Name: `engineering-city-lab-v1.0.1-web.zip`.
+- ZIP size: **1,668,631 bytes**.
+- SHA-256: `55a19e899fb207971f8c742d03640e801c9cc45e9be09bdec75f83ee0d36008c`.
+- Artifacts: `/workspace/artifacts/engineering-city-lab-v1.0.1-review/`.
+- The real ZIP was CRC-checked, its exact 66-member inventory checked, then
+  extracted to `/tmp/city-vendor-extracted/` for the browser tests below.
+
+## Automated checks and limitations
+
+At this update's start, GitHub confirmed PR #6 remained Draft/open at `f638558`,
+its CI had passed, and `main`/current stable v1.0.0 remained `38b1dfd`. Before
+changes **190/190 Node** and **11/11 Python** tests passed.
+
+After changes **190/190 Node** and **18/18 Python** tests pass. The original
+364 validation cases and 76 answer selections are unchanged. Seven additional
+Python tests exercise vendor checksums/missing modules/symlinks, version maps,
+external/computed imports, graph escape, inventory/license/provenance and tarball
+integrity; reproducible ZIP checks extend the existing package test.
+
+Browser results use Chromium 154.0.8037.57:
+
+- Native-DOM learning: three groups, three explicit intercepted provider actions,
+  no page errors.
+- Static package: three groups under a physical Apache tilde-prefixed path,
+  including redirects/direct navigation/refresh, attribution and licenses.
+- Startup diagnostics: five cases including an actual missing local TSL module,
+  synthetic missing export, failed entry, rejected initialization and no overlay
+  reactivation after success. Intentional errors are expected evidence.
+- Native local-module/cache test: root, `course/city/` and
+  `~username/engineering-city-lab/`; all 17 original modules evaluate as r187,
+  both aliases share one instance, two ordinary reloads per path, **102 cache
+  hits and 6 HTTP 304 responses**, zero page errors and no external requests.
+  This suite uses no request routing and does not disable browser cache.
+- Full packaged-city WebGPU: **24/24 groups passed**, with all four transport
+  modes, 11 cameras, four light presets, map/search/teleport/Return, five fixed
+  terminals, Demo, v1/v2 four/five-question units, retry/review, explanations/Form
+  gates and safe replacement. All **57 script responses** (40 app + 17 Three.js)
+  were local HTTP 200 with JavaScript MIME; **zero external or failed script
+  requests**, page errors or GPU device loss. The sole resource console error
+  was the deliberately injected assignment HTTP 503. Startup and night images
+  were inspected; screenshots and network evidence are retained outside Git.
+
+The full-city test blocks every external HTTPS host, including jsDelivr and
+other external Three.js hosts; it does not fulfill or cache any CDN bytes. It
+checks every script's local URL/MIME/status, the exact 17-file vendor inventory,
+and zero external/failed script requests. Synthetic provider document routes
+are registered separately before explicit video/Form actions. Fonts are blocked
+and existing system fallbacks are used. No real video playback/Form submission,
+university Apache access or hardware-GPU performance is inferred.
+
+Full-city rendering uses software Vulkan/SwiftShader and test-only observability/
+deterministic stepping of the actual production loop. This is compatibility
+coverage, not Windows hardware-GPU acceptance or an FPS benchmark.
+
+Reproduce from the reviewed checkout (choose new artifact paths):
 
 ```sh
 node --test --test-reporter=tap tests/*.test.cjs tests/*.test.mjs
 python3 -m unittest tests.test_assignment_contract tests.test_release -v
 python3 tools/check_release.py --syntax
 python3 tools/check_release.py
-python3 tools/package_release.py --output /tmp/city-hotfix-review-package
-python3 tests/browser_startup.py --site-root /tmp/city-hotfix-review-package --output /tmp/city-hotfix-startup-review
-python3 tests/browser_learning_dom.py --output /tmp/city-hotfix-dom
-python3 tests/browser_release.py --site-root /tmp/city-hotfix-review-package --output /tmp/city-hotfix-static-browser
-python3 tests/browser_education.py --workflow --base-path course/city/ --site-root /tmp/city-hotfix-final-package --output /tmp/city-hotfix-final-browser
+python3 tools/package_release.py --output /tmp/city-review-site --zip /tmp/engineering-city-lab-v1.0.1-web.zip
+python3 tests/browser_startup.py --site-root /tmp/city-review-site --output /tmp/city-review-startup
+python3 tests/browser_vendor.py --site-root /tmp/city-review-site --output /tmp/city-review-cache
+python3 tests/browser_learning_dom.py --output /tmp/city-review-dom
+python3 tests/browser_release.py --site-root /tmp/city-review-site --output /tmp/city-review-static
+python3 tests/browser_education.py --workflow --base-path course/city/ --site-root /tmp/city-review-site --output /tmp/city-review-browser
 ```
 
-The output directory for packaging must not already exist. Browser scripts need
-Python Playwright and Chromium. The existing CI includes the new Node dependency
-check; full WebGPU/browser tests remain separately executed.
+For artifact testing, extract the verified ZIP and pass the extracted directory
+to `--site-root`. Current evidence: `/tmp/city-vendor-*.log`,
+`/tmp/city-vendor-node.tap`, `/tmp/city-vendor-browser/results.json` and
+`network.json`, screenshots, `/tmp/city-vendor-cache/results.json` and the other
+browser evidence directories. Existing read-only PR CI includes all Python
+release tests, Node tests and vendor syntax/integrity checks; full WebGPU tests
+remain separately executed.
 
-Native-DOM: three groups / three explicitly activated intercepted provider
-actions, no page errors. Static package: three groups covering real nested
-tilde-prefixed paths, MIME/path behavior, empty manifest and license attribution.
-Startup: four expected failure/lifecycle cases, including the reproduced missing
-export before entry evaluation; its intentional page errors are test evidence.
+## Exact source inventory for this update
 
-Full-city: **22/22 groups passed**, zero page-script errors and no GPU device
-loss. The original 19 groups cover all five normally walked terminal routes,
-Demo, v2 four-question and v1 five-question units, retry/review, explanations,
-Form gates, native external actions, mobile HUD, map/teleports, Return and safe
-failed/cancelled/stale replacements. Three additional groups cover cyclist
-propulsion/helicopter ascent, all eleven rendered camera presets and all four
-rendered lighting presets (including night clustered lights, shadows, SSR and
-post-processing). The 17 resolved CDN resources all share the exact
-`https://cdn.jsdelivr.net/npm/three@0.187.0/` prefix; the missing export is gone.
-The only console resource errors are the intentionally blocked font and the
-deliberate HTTP 503 replacement test. Startup/daylight, all terminal routes,
-question/explanation/four- and five-question completion, and night captures were
-saved; the startup, explanation, completion and night images were inspected.
+The 19 added versioned vendor files are listed individually above and in the
+manifest (17 modules, LICENSE, manifest). Other changes are:
 
-An additional smoke check loaded `/tmp/city-hotfix-review-package` with its
-original `main.js` and original continuous animation loop, without inserting the
-test observation/frame-step hooks. It rendered the city with Three.js revision
-187, hid the loading overlay and reported zero page-script errors. The sole
-console resource error was the deliberately blocked font. Its screenshot uses
-Playwright's `animations='disabled'` to finish the existing CSS fade reliably on
-software GPU; this does not change the shipped HTML/CSS/JS. The full-workflow
-package differs from this final package only by the failure message's max-width
-assignment, covered independently by the final package's native startup tests.
+- `index.html`: local import map; obsolete CDN preconnect removed; diagnostics retained.
+- New `.gitattributes`: retain exact vendor bytes on Windows Git checkouts.
+- `README.md`, `THIRD_PARTY_NOTICES.html`: current local runtime and license links.
+- `tools/package_release.py`: import-map graph, vendor integrity and deterministic ZIP/checksum.
+- `tools/check_release.py`: include vendored JS in syntax checks.
+- New `tools/three_runtime.py`, `tools/vendor_three.py`: pinned provenance, graph rules and offline reproduction from the official tarball.
+- `tests/boot.test.cjs`, `tests/test_release.py`: local aliases, nested URLs, vendor/package/ZIP regressions.
+- `tests/browser_education.py`, `tests/browser_startup.py`: no-CDN full-city network evidence, map search and actual missing-local-dependency failure.
+- New `tests/browser_vendor.py`: ordinary module refresh/cache at three physical paths.
+- `docs/deployment.md`, `docs/upstream.md`, `docs/release-checklist.md`, this report and new `docs/v1.0.1-release-notes.md`: deployment, upgrade, acceptance and release preparation.
 
-Browser accommodations: Linux Chromium 154.0.8037.57, software Vulkan/SwiftShader,
-real WebGPU backend and actual unmodified production renderer/TSL/SSR pipeline.
-Test-only instrumentation provides deterministic production-frame stepping and
-observability. When the environment proxy is present, verified-TLS Python fetches
-and an exact URL-keyed local cache supply the unchanged CDN response bytes to
-Chromium. Fonts are intentionally blocked and use existing system fallbacks.
-Synthetic YouTube/Form actions are intercepted before provider contact; they
-do not prove real video playback or Form submission. These checks establish
-compatibility in this test environment, not Windows hardware-GPU performance,
-FPS, school-network CDN access or physical Chrome/Edge acceptance.
+No production file under `js/`, `css/`, `schemas/` or `assignments/` is changed.
+No unrelated library, teacher GUI, framework, backend or tracking is introduced.
 
-Local evidence is outside Git: `/tmp/city-hotfix-investigation/` contains the
-original failure screenshot, browser console and network hashes; `/tmp/city-hotfix-*.log`
-and `.tap` contain regression logs. Browser output directories contain
-`results.json` and screenshots; full-city runs also produce `cdn-resources.json`.
-The uninstrumented final-package smoke evidence is in
-`/tmp/city-hotfix-live-browser/`.
-No real coursework or student information is used.
+## Get and test the candidate on Windows 11
 
-## Windows 11 Chrome / Edge instructor acceptance
-
-Record browser versions and GPU/driver, then repeat in both browsers using the
-candidate over localhost HTTP or the approved HTTPS test host:
-
-1. Reload with cache disabled once, then normally. Confirm loading finishes,
-   Manhattan and traffic render, and no missing export, shader error or device
-   loss appears in DevTools. Check all four import-map URLs use `0.187.0`.
-2. Walk, drive/brake, cycle, fly/ascend/descend; use all 11 cameras. Open/search
-   the map, teleport, and Return to Start. Check traffic, collisions and audio.
-3. Switch golden/midday/twilight/midnight; compare sky, shadows, reflections and
-   post-processing with the accepted city appearance. Record visual anomalies.
-4. Reach each fixed terminal and press X. Check Demo retries retain passes;
-   dialogs pause movement and close cleanly. Check existing proximity rules.
-5. Use the existing synthetic fixture review server for v1 and v2. Verify four/
-   five questions, Q05 visibility, single-label acceptance, explanation gates,
-   4/4 or 5/5 Form unlock, and cancelled/failed replacement retaining progress.
-   Provider tabs are intentionally mocked with `--review-browser`; do not claim
-   these tabs prove real course URLs work.
-6. Block a Three.js build request in DevTools and reload: a readable failure
-   replaces the spinner. Remove the block and reload: startup recovers.
+The downloadable review ZIP and SHA256SUMS accompany this conversation. The
+branch source ZIP is also available through GitHub **Code → Download ZIP** at:
+<https://github.com/chingchechung/engineering-city-lab/tree/fix/pin-threejs-r187>.
+That GitHub source archive is not the deployable website ZIP. Alternatively:
 
 ```powershell
-py -3 -m http.server 8000 --bind 127.0.0.1
-# Separately, use the existing fixture reviewer; repeat with --version 1
-# and with --review-browser msedge:
-py -3 tests/serve_assignment_fixtures.py --version 2 --prefix course/city --review-browser chrome
+git clone --branch fix/pin-threejs-r187 https://github.com/chingchechung/engineering-city-lab.git engineering-city-lab-v1.0.1-review
+cd engineering-city-lab-v1.0.1-review
+git rev-parse HEAD
+New-Item -ItemType Directory -Path C:\Temp\city-v1.0.1-review
+py -3 tools\package_release.py --output C:\Temp\city-v1.0.1-review\site --zip C:\Temp\city-v1.0.1-review\engineering-city-lab-v1.0.1-web.zip
+Get-FileHash C:\Temp\city-v1.0.1-review\engineering-city-lab-v1.0.1-web.zip -Algorithm SHA256
+Get-Content C:\Temp\city-v1.0.1-review\SHA256SUMS.txt
+py -3 -m http.server 8000 --bind 127.0.0.1 --directory C:\Temp\city-v1.0.1-review\site
 ```
 
-Physical Windows acceptance is pending; do not merge or release on the strength
-of software Vulkan alone.
+Repeat in Chrome and Edge, record versions/GPU/driver and pass/fail:
 
-## Deployment and rollback plan (not executed)
+1. Open localhost, reload with and without cache, confirm the city loads and no
+   missing module/export, shader or device-loss error. Block `cdn.jsdelivr.net`;
+   confirm no remote script requests and all 17 Three.js files are local vendor URLs.
+2. Walk, drive/brake, cycle, fly/ascend/descend; check traffic/collisions/audio,
+   all 11 cameras and four light presets including night shadows/reflections.
+3. Map/search/teleport/Return work; each fixed terminal remains reachable with X
+   and the original proximity/speed rules. Demo retry preserves passes and dialogs
+   pause/restore controls cleanly.
+4. Use the existing v1 and v2 fixture reviewer for four/five questions, Q05 rules,
+   single-label acceptance, explanations/Form gates and failed/cancelled replacement.
+   `--review-browser chrome`/`msedge` intentionally mocks provider tabs.
+5. Block one local `three.tsl.js` request and reload: readable startup failure;
+   unblock/reload: normal recovery. Test the actual approved HTTPS nested host
+   separately before any production deployment.
 
-After instructor review, Windows acceptance and explicit merge/release/deployment
-authorization, use the existing `tools/package_release.py` mechanism to create a
-fresh directory. Verify 47 runtime files, empty manifest, root `index.html` and
-both notices; zip its contents and compute a new SHA-256/checksum file. Validate
-the candidate under an HTTPS nested path, including JS/JSON MIME, 404s and CDN
-access. Assign a new patch version if a release is later approved; do not change
-the `v1.0.0` tag, assets or notes in this hotfix task.
+## Future Three.js upgrades
 
-Privately back up the deployed website and real assignment files outside the
-public directory. Stage the complete candidate in a separate version directory,
-preserve the approved course files, verify it, then switch the entry point during
-an agreed maintenance window. Use the existing unit-first/manifest-last rules
-when course data needs publishing; no such publication is part of this change.
+Use a separate reviewed change. Obtain the chosen exact version's registry
+metadata/tarball over verified TLS; record/verify official integrity and SHA-256.
+Update provenance/version constants, then run `tools/vendor_three.py --tarball`
+against a new version directory. It never fetches, executes npm scripts or modifies
+upstream bytes. Review the discovered closure, any new syntax/assets and license;
+update all four aliases together. Keep version directories immutable, regenerate
+checksums/inventory and package expectations, run complete CI/packaged-city tests
+with external scripts blocked, ordinary-cache tests and physical Windows review.
+Do not silently upgrade, flatten paths or overwrite an old version with new bytes.
 
-For source rollback, revert the hotfix on a new review branch; never force-push
-or move the old tag. The original v1.0.0 website still uses floating `@dev`, so
-restoring its HTML can restore the same startup failure: it is a historical
-source anchor, not an assured functioning dependency rollback. Prefer the last
-instructor-verified complete website/dependency snapshot, if one exists. If only
-the added failure message regresses, revert that observer while retaining the
-validated fixed dependency URLs. Confirm startup and coursework after any rollback.
+## Release and deployment gates
 
-Stop at a Draft PR. No merge, release, university deployment or coursework
-publication is authorized by completion of these automated checks.
+Stop at updated Draft PR #6 for instructor acceptance. Physical Windows r187
+acceptance has not been supplied in this conversation. After explicit confirmation
+that both Chrome and Edge pass, verify successful CI for the approved head, merge
+PR #6, verify exact merged `main`, annotate/tag **v1.0.1** at that commit, regenerate
+and verify the clean ZIP/checksum from it, then publish the separately prepared
+release notes/assets. Recompute metadata from the actual uploaded ZIP and compare
+its downloaded digest/checksum; never copy v1.0.0 or an older review ZIP hash.
+If API/upload access fails, provide verified files and notes for manual upload and
+do not claim publication. Preserve v1.0.0 tag and assets unchanged.
+
+No university Apache deployment is part of this task. For any later authorized
+deployment, stage a complete version directory, back up existing site/course data
+privately, retain notices, verify HTTPS/nested paths/MIME/404/local vendor loading,
+then switch the entry point. Keep coursework publication separate (unit first,
+manifest last). Roll back to a complete instructor-verified site/dependency
+snapshot; original v1.0.0's floating CDN HTML can reproduce this incident and is
+not an assured working dependency rollback. Source rollback uses a normal revert
+on a review branch, never history/tag rewriting.

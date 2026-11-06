@@ -33,6 +33,7 @@ def run(site_root, output):
                                         args=['--no-sandbox'])
             try:
                 cases = {
+                    'missing-local-three': 'actual application entry',
                     'module-link': "import { StorageStructNode } from './broken-tsl.js'; window.__entryRan = true;",
                     'entry-fetch': None,
                     'init-rejection': "window.__entryRan = true; Promise.reject(new Error('test WebGPU init failure'));",
@@ -46,12 +47,16 @@ def run(site_root, output):
                     page.on('pageerror', lambda error: errors.append(str(error)))
 
                     def entry(route):
-                        if source is None:
+                        if name == 'missing-local-three':
+                            route.continue_()
+                        elif source is None:
                             route.abort()
                         else:
                             route.fulfill(body=source, content_type='application/javascript')
 
                     page.route('**/js/main.js', entry)
+                    if name == 'missing-local-three':
+                        page.route('**/vendor/three/0.187.0/build/three.tsl.js', lambda route: route.fulfill(status=404, body='Deliberately missing dependency'))
                     page.route('**/js/broken-tsl.js', lambda route: route.fulfill(
                         body='export const differentSymbol = 1;', content_type='application/javascript'))
                     page.goto(f'http://127.0.0.1:{server.server_port}/', wait_until='networkidle')
@@ -63,7 +68,10 @@ def run(site_root, output):
                         assert page.locator('#loading-overlay').is_visible()
                         assert 'Rendering dependencies or WebGPU initialization failed.' in page.locator('#loading-status').inner_text()
                         assert not page.locator('.loader-track').evaluate('(el) => el.classList.contains("is-indeterminate")')
-                        if name == 'module-link':
+                        if name == 'missing-local-three':
+                            assert page.locator('#canvas-container canvas').count() == 0
+                            page.screenshot(path=str(output / 'missing-local-three.png'))
+                        elif name == 'module-link':
                             assert not page.evaluate('Boolean(window.__entryRan)')
                             assert any('StorageStructNode' in error for error in errors), errors
                             page.screenshot(path=str(output / 'module-failure.png'))

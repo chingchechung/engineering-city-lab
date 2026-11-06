@@ -1,5 +1,23 @@
 # Release candidate review
 
+## v1.0.1 instructor gate (2026-11-06)
+
+Draft PR #6 now includes the local official Three.js 0.187.0 runtime, its MIT
+license and per-file integrity manifest. Use the current [combined report](threejs-startup-hotfix.md)
+and [deployment procedure](deployment.md), not the historical 47-file/CDN
+candidate below. The candidate has 66 files and no external Three.js request.
+
+- [ ] Instructor Windows 11 Chrome and Edge hardware-GPU checks pass, recording
+  browser/GPU versions and any visual differences.
+- [ ] Latest PR head has successful GitHub regression CI and the documented
+  full packaged-city tests with external hosts blocked.
+- [ ] Instructor confirms acceptance before merge/tag/release; no Apache deployment.
+- [ ] After approval, verify merged `main`, generate fresh ZIP/checksum from it,
+  inspect all 66 members and actual uploaded asset bytes/digest, and publish a
+  new annotated `v1.0.1` without modifying `v1.0.0`.
+
+## Historical Phase 4 acceptance record
+
 Prepared 2026-10-24 (Asia/Taipei). Phase 3 PR #4 merged at verified baseline
 `dba670bcbf483affad148ace04194089870e9e47`. The instructor reports **11/11
 Windows 11 Phase 3 acceptance checks passed**. Browser versions, GPU observations

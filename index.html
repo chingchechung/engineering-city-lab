@@ -6,15 +6,14 @@
   <title>Slop New York</title>
   <link rel="icon" href="data:," />
   <meta name="description" content="Photorealistic GTA-style 3D Slop New York simulation built with Three.js WebGPURenderer and TSL shaders featuring complete Manhattan street map (125th St to Battery Park), third-person navigation (Person, Car, Cyclist, Helicopter), and 11 cinematic cameras at 60 FPS." />
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <!-- Keep every Three.js alias and addon on the same fixed release. -->
   <script type="importmap">
     {
       "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
-        "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js",
-        "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.tsl.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
+        "three": "./vendor/three/0.187.0/build/three.webgpu.js",
+        "three/webgpu": "./vendor/three/0.187.0/build/three.webgpu.js",
+        "three/tsl": "./vendor/three/0.187.0/build/three.tsl.js",
+        "three/addons/": "./vendor/three/0.187.0/examples/jsm/"
       }
     }
   </script>
