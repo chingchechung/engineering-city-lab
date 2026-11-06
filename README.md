@@ -8,7 +8,7 @@ Serve this directory over HTTP for local development:
 python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
-Open `http://127.0.0.1:8000/` in a WebGPU-capable Chrome/Edge browser. Production needs **HTTPS**, or a secure browser context; arbitrary plain HTTP university hosts may disable WebGPU. No server Node runtime, database or application build is needed. Internet access to the existing CDN dependencies is required; opening `index.html` as `file://` is unsupported.
+Open `http://127.0.0.1:8000/` in a WebGPU-capable Chrome/Edge browser. Production needs **HTTPS**, or a secure browser context; arbitrary plain HTTP university hosts may disable WebGPU. No server Node runtime, database or application build is needed. Three.js **0.187.0** and its required addons are bundled locally under `vendor/three/0.187.0/`; no Three.js CDN access is needed. Fonts have system fallbacks, while YouTube and Google Forms remain external. Opening `index.html` as `file://` is unsupported. See the [runtime and v1.0.1 review report](docs/threejs-startup-hotfix.md).
 
 Approach a fixed terminal and press **X** while stationary. Wrong answers can be retried. For published assignments, open the question video on request, choose one answer, optionally review the explanation after passing, and open Google Forms at 4/4 or 5/5. No exit or map timer is required. The public manifest is empty by default; Demo Mode has synthetic local questions and no fabricated external links. Progress lasts until the page reloads.
 

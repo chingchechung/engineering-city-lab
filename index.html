@@ -6,17 +6,38 @@
   <title>Slop New York</title>
   <link rel="icon" href="data:," />
   <meta name="description" content="Photorealistic GTA-style 3D Slop New York simulation built with Three.js WebGPURenderer and TSL shaders featuring complete Manhattan street map (125th St to Battery Park), third-person navigation (Person, Car, Cyclist, Helicopter), and 11 cinematic cameras at 60 FPS." />
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-  <!-- three.js dev branch (builds committed to mrdoob/three.js@dev, served by jsDelivr) -->
+  <!-- Keep every Three.js alias and addon on the same fixed release. -->
   <script type="importmap">
     {
       "imports": {
-        "three": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.webgpu.js",
-        "three/webgpu": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.webgpu.js",
-        "three/tsl": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/build/three.tsl.js",
-        "three/addons/": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/jsm/"
+        "three": "./vendor/three/0.187.0/build/three.webgpu.js",
+        "three/webgpu": "./vendor/three/0.187.0/build/three.webgpu.js",
+        "three/tsl": "./vendor/three/0.187.0/build/three.tsl.js",
+        "three/addons/": "./vendor/three/0.187.0/examples/jsm/"
       }
     }
+  </script>
+  <!-- Install before the module entry: static import errors never reach main.js. -->
+  <script>
+    (() => {
+      const showStartupFailure = () => {
+        const overlay = document.getElementById('loading-overlay');
+        if (!overlay || overlay.classList.contains('hidden')) return;
+        const status = document.getElementById('loading-status');
+        status.style.maxWidth = 'min(32rem, 90vw)';
+        status.textContent =
+          'Rendering dependencies or WebGPU initialization failed. Reload the page; if this continues, check your connection and use a WebGPU-compatible Chrome or Edge browser.';
+        overlay.querySelector('.loader-track').classList.remove('is-indeterminate');
+        document.getElementById('loading-progress').style.transform = 'scaleX(0)';
+      };
+      window.addEventListener('error', (event) => {
+        if (event instanceof ErrorEvent ||
+            (event.target instanceof HTMLScriptElement && event.target.type === 'module')) {
+          showStartupFailure();
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', showStartupFailure);
+    })();
   </script>
   <!-- Fetch the city modules in parallel before stylesheets; the module graph controls evaluation order. -->
   <link rel="modulepreload" href="./js/nyc-geodata.js" />

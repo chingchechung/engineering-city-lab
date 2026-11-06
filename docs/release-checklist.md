@@ -1,5 +1,31 @@
 # Release candidate review
 
+## v1.0.1 instructor gate (2026-11-06)
+
+PR #6 includes the local official Three.js 0.187.0 runtime, its MIT
+license and per-file integrity manifest. Use the current [combined report](threejs-startup-hotfix.md)
+and [deployment procedure](deployment.md), not the historical 47-file/CDN
+candidate below. The candidate has 66 files and no external Three.js request.
+
+- [x] Instructor reports Windows 11 Chrome startup PASS and Edge startup PASS on
+  2026-11-06 for reviewed commit `8d050156c66a121204dd5e605c8361058fb0a850`.
+  Self-hosted r187 loads and the original failure is resolved. Browser versions,
+  GPU/driver, FPS and detailed individual manual results were not supplied.
+- [x] Reviewed implementation head has successful GitHub regression CI and all
+  24 packaged-city software-WebGPU groups with external hosts blocked. Verify
+  CI again for the final documentation-only head before merging.
+- [x] Instructor authorizes PR finalization, merge/tag/release; no Apache deployment.
+- [ ] After approval, verify merged `main`, generate fresh ZIP/checksum from it,
+  inspect all 66 members and actual uploaded asset bytes/digest, and publish a
+  new annotated `v1.0.1` without modifying `v1.0.0`.
+
+This is the pre-merge acceptance record. Final merged SHA, tag target, published
+asset metadata and download verification are recorded in the GitHub Release.
+The earlier local packaging issue was resolved using a clean source archive
+with an empty public manifest and was not a code defect.
+
+## Historical Phase 4 acceptance record
+
 Prepared 2026-10-24 (Asia/Taipei). Phase 3 PR #4 merged at verified baseline
 `dba670bcbf483affad148ace04194089870e9e47`. The instructor reports **11/11
 Windows 11 Phase 3 acceptance checks passed**. Browser versions, GPU observations

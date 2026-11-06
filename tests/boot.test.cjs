@@ -19,9 +19,25 @@ test('city module preloads start after the import map and before stylesheets', (
   assert.equal(entries.length, 1);
   assert.ok(importMap.index < entries[0].index);
   assert.ok(entries[0].index < stylesheetIndex, 'the module graph starts loading early too');
-  assert.match(html, /<link rel="preconnect" href="https:\/\/cdn\.jsdelivr\.net" crossorigin\s*\/>/);
+  assert.doesNotMatch(html, /cdn\.jsdelivr\.net|three\.js@dev|three@latest/);
   const { imports } = JSON.parse(importMap[1]);
   assert.equal(imports.three, imports['three/webgpu'], 'Three.js aliases share one module instance');
+});
+
+test('all Three.js aliases and addons use one fixed, compatible release', () => {
+  const { imports } = JSON.parse(importMap[1]);
+  const base = './vendor/three/0.187.0/';
+  assert.deepEqual(imports, {
+    three: `${base}build/three.webgpu.js`,
+    'three/webgpu': `${base}build/three.webgpu.js`,
+    'three/tsl': `${base}build/three.tsl.js`,
+    'three/addons/': `${base}examples/jsm/`,
+  }, 'floating versions, mixed releases, or duplicate Three.js instances break the module graph');
+  for (const site of ['https://example.test/', 'https://example.test/course/city/', 'https://example.test/~username/city/']) {
+    for (const src of Object.values(imports)) {
+      assert.ok(new URL(src, site).href.startsWith(site + 'vendor/three/0.187.0/'));
+    }
+  }
 });
 
 test('native module entry and imports share canonical preloaded URLs on GitHub Pages', () => {
@@ -31,7 +47,7 @@ test('native module entry and imports share canonical preloaded URLs on GitHub P
   assert.equal(entries.length, 1);
   assert.equal(entries[0][1], './js/main.js');
   assert.ok(links.includes(entries[0][1]));
-  assert.equal([...html.matchAll(/<script\b/g)].length, 2, 'only the import map and native entry are needed');
+  assert.equal([...html.matchAll(/<script\b/g)].length, 3, 'import map, isolated startup failure handler and native entry');
   const base = 'https://example.test/slop-newyork/';
   const urls = new Set(links.map((src) => new URL(src, base).href));
   for (const src of links) {

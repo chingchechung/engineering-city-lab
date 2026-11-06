@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "name": "three",
+    "version": "0.187.0",
+    "metadata": "https://registry.npmjs.org/three/0.187.0",
+    "tarball": "https://registry.npmjs.org/three/-/three-0.187.0.tgz",
+    "integrity": "sha512-Qiu7R+Cmh8CstZsY1uJOSWnVlfo7ZtNLV7mF8Jltk3LB3AtDu9cRZlcnRKkAk8Y4z6KKw35z7Y7Urd7jWY8etA==",
+    "sha256": "ff540832ded0cfe919764d24a3d88f3e2a05f23303f876423e4f893841e90728"
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    {
+      "path": "build/three.core.js",
+      "bytes": 1474799,
+      "sha256": "613e370f76638fdef83926642bf256dc9615684922de1ce1f63a8583e5d78578"
+    },
+    {
+      "path": "build/three.tsl.js",
+      "bytes": 1065544,
+      "sha256": "d8f3cdb8b85b799a5631bd9a8d77e185d88ce1eb1bb051f48b332728a5423e3f"
+    },
+    {
+      "path": "build/three.webgpu.js",
+      "bytes": 1350894,
+      "sha256": "eafead3154ec06093f3108bddceab360f048a6fcebd7c085d5aae0ab5404bd25"
+    },
+    {
+      "path": "examples/jsm/lighting/ClusteredLighting.js",
+      "bytes": 4240,
+      "sha256": "28d00d4a745a8927d7e0f0d8664d94d23d98ffea120ff54183b40973be45bf17"
+    },
+    {
+      "path": "examples/jsm/lights/SunLight.js",
+      "bytes": 2203,
+      "sha256": "580a50687031518ea66e4b0cb85884d657d2f7dc72d38e64e6c874d51f5aa2eb"
+    },
+    {
+      "path": "examples/jsm/lights/SunLightNode.js",
+      "bytes": 1148,
+      "sha256": "d64be448da7631e35c8382b4b80906326613739f4891301820886bddaaf9c337"
+    },
+    {
+      "path": "examples/jsm/lights/SunLightShadow.js",
+      "bytes": 9326,
+      "sha256": "fd3ecd1e7d426813607f2829a1f767c0473ddbf3b3507d1cc9cca888a6839e31"
+    },
+    {
+      "path": "examples/jsm/lights/SunShadowNode.js",
+      "bytes": 8825,
+      "sha256": "3e5e7f347c49f59b946b6958f2b88863fc7ee38fd6b992917f4a6c2f2190654c"
+    },
+    {
+      "path": "examples/jsm/objects/SkyMesh.js",
+      "bytes": 13456,
+      "sha256": "64804362f468a70d5d0283161241d85ef5c47fa1944ca916542a04217c3ebe64"
+    },
+    {
+      "path": "examples/jsm/tsl/display/BloomNode.js",
+      "bytes": 17230,
+      "sha256": "e7a39bf41581b5ada6463dfd2e571c6fff27648e459cc0d7fd13d64bbcf0f6ea"
+    },
+    {
+      "path": "examples/jsm/tsl/display/ImportanceSampledEnvironment.js",
+      "bytes": 16658,
+      "sha256": "bdc3178097fef93fb5f55e46658e85b3762028964b0b617b10ba58b79cf841d9"
+    },
+    {
+      "path": "examples/jsm/tsl/display/SSRNode.js",
+      "bytes": 46020,
+      "sha256": "3f59131d1682a9f0738e7e84060d526286c43566df141239d11401e87a8d2480"
+    },
+    {
+      "path": "examples/jsm/tsl/display/boxBlur.js",
+      "bytes": 2748,
+      "sha256": "fa6f4ce3c9b1205fa3cc8a9da7783e57405402b6aa62a4bd984a8b0ac5ded115"
+    },
+    {
+      "path": "examples/jsm/tsl/lighting/ClusteredLightsNode.js",
+      "bytes": 30391,
+      "sha256": "b630754af89855a58daf082a3ca677007b1089912de61a3bdeb68c38c3da3c04"
+    },
+    {
+      "path": "examples/jsm/tsl/utils/RNoise.js",
+      "bytes": 1499,
+      "sha256": "a235650eba39528ff10f987c497552c65a3affc4633591f34aae24b4ae98a20b"
+    },
+    {
+      "path": "examples/jsm/tsl/utils/SpecularHelpers.js",
+      "bytes": 12322,
+      "sha256": "55b5b399aa03e5b384dee384a57e8bcc17372a1c200ccf11634ac3317f9b5bed"
+    },
+    {
+      "path": "examples/jsm/utils/BufferGeometryUtils.js",
+      "bytes": 39153,
+      "sha256": "7bda2a8ba836b2bcf67cb938d4b9e1bb5d1b1bc616817103ed858c0b58296ce7"
+    }
+  ]
+}

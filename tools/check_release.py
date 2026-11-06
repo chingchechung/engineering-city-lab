@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
     if args.syntax:
         counts = {'JavaScript': 0, 'Python': 0}
-        for directory in ('js', 'tools', 'tests'):
+        for directory in ('js', 'tools', 'tests', 'vendor'):
             for path in sorted((ROOT / directory).rglob('*')):
                 if path.suffix in ('.js', '.mjs', '.cjs'):
                     subprocess.run(['node', '--check', str(path)], check=True)
