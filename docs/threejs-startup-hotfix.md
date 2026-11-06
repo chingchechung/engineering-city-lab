@@ -1,8 +1,23 @@
 # Three.js startup repair and self-hosted r187 — v1.0.1 review
 
-Updated 2026-11-06 (Asia/Taipei), Draft PR #6, branch `fix/pin-threejs-r187`.
-**Status: automated implementation/review candidate; physical Windows acceptance,
-merge and release are separate gates. Nothing has been deployed to Apache.**
+Updated 2026-11-06 (Asia/Taipei), PR #6, branch `fix/pin-threejs-r187`.
+**Status: instructor startup acceptance received for reviewed commit
+`8d050156c66a121204dd5e605c8361058fb0a850`; merge and v1.0.1 publication authorized
+after final CI verification. Nothing has been deployed to Apache.**
+
+## Instructor acceptance — 2026-11-06
+
+The instructor reports **Windows 11 Google Chrome: PASS** and **Windows 11
+Microsoft Edge: PASS**. The original `StorageStructNode` startup failure is
+resolved and the self-hosted Three.js 0.187.0 website loads successfully.
+These are instructor-reported physical startup results, separate from the
+automated coverage below. Browser versions, GPU/driver details, FPS and individual
+detailed manual-check results were not supplied and are not inferred.
+
+The instructor's earlier local packaging issue was resolved by downloading a
+clean PR #6 source archive with an empty public assignment manifest, permitting
+the 66-file package. It was not reported as a code defect; no runtime change is
+made for that local packaging issue. This finalization changes documentation only.
 
 ## Confirmed incident and final architecture
 
@@ -257,9 +272,9 @@ Do not silently upgrade, flatten paths or overwrite an old version with new byte
 
 ## Release and deployment gates
 
-Stop at updated Draft PR #6 for instructor acceptance. Physical Windows r187
-acceptance has not been supplied in this conversation. After explicit confirmation
-that both Chrome and Edge pass, verify successful CI for the approved head, merge
+Instructor startup acceptance and publication authorization were received on
+2026-11-06 as recorded above. Verify successful CI for the final documentation
+head, mark PR #6 ready, merge
 PR #6, verify exact merged `main`, annotate/tag **v1.0.1** at that commit, regenerate
 and verify the clean ZIP/checksum from it, then publish the separately prepared
 release notes/assets. Recompute metadata from the actual uploaded ZIP and compare
