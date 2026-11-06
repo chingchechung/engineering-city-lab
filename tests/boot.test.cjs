@@ -24,6 +24,17 @@ test('city module preloads start after the import map and before stylesheets', (
   assert.equal(imports.three, imports['three/webgpu'], 'Three.js aliases share one module instance');
 });
 
+test('all Three.js aliases and addons use one fixed, compatible release', () => {
+  const { imports } = JSON.parse(importMap[1]);
+  const base = 'https://cdn.jsdelivr.net/npm/three@0.187.0/';
+  assert.deepEqual(imports, {
+    three: `${base}build/three.webgpu.js`,
+    'three/webgpu': `${base}build/three.webgpu.js`,
+    'three/tsl': `${base}build/three.tsl.js`,
+    'three/addons/': `${base}examples/jsm/`,
+  }, 'floating versions, mixed releases, or duplicate Three.js instances break the module graph');
+});
+
 test('native module entry and imports share canonical preloaded URLs on GitHub Pages', () => {
   const links = preloads.map((match) => match[1]);
   assert.equal(links.length, 40); // The 29 imported city modules plus eleven educational/assignment modules.
@@ -31,7 +42,7 @@ test('native module entry and imports share canonical preloaded URLs on GitHub P
   assert.equal(entries.length, 1);
   assert.equal(entries[0][1], './js/main.js');
   assert.ok(links.includes(entries[0][1]));
-  assert.equal([...html.matchAll(/<script\b/g)].length, 2, 'only the import map and native entry are needed');
+  assert.equal([...html.matchAll(/<script\b/g)].length, 3, 'import map, isolated startup failure handler and native entry');
   const base = 'https://example.test/slop-newyork/';
   const urls = new Set(links.map((src) => new URL(src, base).href));
   for (const src of links) {

@@ -25,7 +25,7 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
     output.mkdir(parents=True, exist_ok=True)
     cache = output / 'cdn-cache'
     cache.mkdir(exist_ok=True)
-    errors, messages, checks, routes = [], [], [], []
+    errors, messages, checks, routes, cdn_resources = [], [], [], [], []
 
     class QuietHandler(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *_args):
@@ -67,7 +67,9 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                     if not saved.exists():
                         with urllib.request.urlopen(url, timeout=60) as response:
                             saved.write_bytes(response.read())
-                    route.fulfill(body=saved.read_bytes(), content_type='application/javascript',
+                    data = saved.read_bytes()
+                    cdn_resources.append({'url': url, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
+                    route.fulfill(body=data, content_type='application/javascript',
                                   headers={'access-control-allow-origin': '*'})
                 page.route('https://cdn.jsdelivr.net/**', cdn)
                 # External font hosts are outside this environment's allowed destinations.
@@ -80,7 +82,8 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                 assert source.count(needle) == 1
                 observe = """  window.__city = {controllerManager, cameraSystem, mapSystem,
                   trafficSystem, highwayTraffic, scene, renderer, streetDetails, allColliders,
-                  educationUI, educationNavigation, demoSession, assignmentLoader, assignmentUI, get elapsed(){return elapsed;},
+                  educationUI, educationNavigation, demoSession, assignmentLoader, assignmentUI, lightingSystem,
+                  threeRevision: THREE.REVISION, get elapsed(){return elapsed;},
                   starts: Object.fromEntries(Object.entries(controllerManager.entities).map(([k,e])=>
                     [k,{x:e.position.x,y:e.position.y,z:e.position.z,heading:e.heading}]))};
                 renderer.backend.device.lost.then(info => window.__gpuLost = info.message);
@@ -136,6 +139,7 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                 page.wait_for_function('window.__testReady', timeout=600000)
                 assert not page.evaluate('window.__gpuLost'), 'Software WebGPU device lost; visual verification unavailable'
                 assert not errors, errors
+                assert page.evaluate('__city.renderer.backend.isWebGPUBackend'), 'A real WebGPU backend is required'
                 starts = page.evaluate('__city.starts')
                 assert starts['car'] == {'x': 3.6, 'y': 0, 'z': 410.6, 'heading': 0}, starts
                 assert starts['person']['x'] == -11.6 and starts['cyclist']['x'] == 5.2 and starts['helicopter']['y'] == 96
@@ -291,11 +295,48 @@ def run(output, assignments=False, base_path='', workflow=False, site_root=ROOT)
                 if assignments:
                     from browser_assignments import check_assignments
                     check_assignments(page, output, checks, base_path, workflow=workflow)
+                # Dependency changes must keep the original city controls and render
+                # paths working too, beyond the education workflow above.
+                progress = page.evaluate('__city.demoSession.count')
+                page.get_by_role('button', name='Return to Start', exact=True).click()
+                for digit, mode, key in [('3', 'cyclist', 'w'), ('4', 'helicopter', 'e')]:
+                    page.keyboard.press(digit)
+                    assert page.evaluate('__city.controllerManager.activeMode') == mode
+                    before = page.evaluate('__city.controllerManager.getActiveEntity().position.toArray()')
+                    page.keyboard.down(key)
+                    page.evaluate('__step(40, false)')
+                    page.keyboard.up(key)
+                    after = page.evaluate('__city.controllerManager.getActiveEntity().position.toArray()')
+                    assert sum((a-b)**2 for a, b in zip(after, before)) > 0.1, (mode, before, after)
+                    if mode == 'helicopter':
+                        assert after[1] > before[1]
+                    page.evaluate('__step()')
+                page.get_by_role('button', name='Return to Start', exact=True).click()
+                checks.append('cyclist propulsion and helicopter ascent render through original controls; walking and car driving checked above')
+
+                cameras = []
+                for _ in range(11):
+                    page.locator('#cam-next').click()
+                    page.evaluate('__step()')
+                    cameras.append(page.evaluate('__city.cameraSystem.activePresetId'))
+                assert len(set(cameras)) == 11, cameras
+                page.keyboard.press('5')
+                checks.append('all eleven camera presets render through native camera controls')
+
+                for preset in ['midday', 'twilight', 'midnight', 'golden']:
+                    page.locator(f'#time-{preset}').click()
+                    page.evaluate('__step()')
+                    assert page.evaluate('__city.lightingSystem.activePresetId') == preset
+                    if preset == 'midnight':
+                        page.screenshot(path=str(output / 'midnight.png'), timeout=180000)
+                assert page.evaluate('__city.demoSession.count') == progress
+                checks.append('all four lighting presets render with clustered lighting, shadows, SSR and post-processing; progress preserved')
                 assert not errors, errors
                 assert not page.evaluate('window.__gpuLost'), 'WebGPU device was lost during the check'
                 print(json.dumps({'checks': checks, 'starts': starts, 'sites': sites, 'routes':routes, 'browser': browser.version}, indent=2), flush=True)
             finally:
                 (output / 'results.json').write_text(json.dumps({'checks': checks, 'routes':routes, 'page_errors': errors, 'console': messages}, indent=2))
+                (output / 'cdn-resources.json').write_text(json.dumps(cdn_resources, indent=2))
                 browser.close()
     finally:
         server.shutdown()
